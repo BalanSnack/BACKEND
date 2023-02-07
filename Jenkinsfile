@@ -25,7 +25,7 @@ pipeline{
                             sshTransfer(
                                 sourceFiles: 'backend',
                                 remoteDirectory: '.',
-                                execCommand: './backend'
+                                execCommand: 'chmod +x backend && ./backend'
                             )
                         ],
                         verbose: true
