@@ -24,7 +24,7 @@ pipeline{
                         transfers: [
                             sshTransfer(
                                 sourceFiles: 'backend',
-                                remoteDirectory: '/usr/local/backend',
+                                remoteDirectory: '.',
                                 execCommand: './backend'
                             )
                         ],
