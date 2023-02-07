@@ -20,7 +20,7 @@ pipeline{
                     failOnError: true,
                     publishers: [
                         sshPublisherDesc(
-                        configName: "34.64.142.244",
+                        configName: "backend",
                         transfers: [
                             sshTransfer(
                                 sourceFiles: 'backend',
