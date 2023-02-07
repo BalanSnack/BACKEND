@@ -1,7 +1,15 @@
 node{
-    checkout scm
-    def backendImage = docker.build("balansnack-backend-image")
-    backendImage.push()
+    stage('clone repository'){
+        checkout scm
+    }
+    stage('build image'){
+        image = docker.build("balansnack/balansnack-backend")
+    }
+    stage('push image'){
+        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub'){
+            image.push()
+        }
+    }
 }
 
 // stage('deploy'){
