@@ -13,5 +13,26 @@ pipeline{
                 echo "go build..."
             }
         }
+        stage('deploy'){
+            steps{
+                sshPublisher(
+                    continueOnError: false, 
+                    failOnError: true,
+                    publishers: [
+                        sshPublisherDesc(
+                        configName: "my-ssh-connection",
+                        transfers: [
+                            sshTransfer(
+                                sourceFiles: 'backend',
+                                remoteDirectory: '/usr/local/backend',
+                                execCommand: 'cd /usr/local/backend && ./backend'
+                            )
+                        ],
+                        verbose: true
+                        )
+                    ]
+                )
+            }
+        }
     }
 }
