@@ -1,4 +1,4 @@
-module balansnack/backend
+module balansnack/balansnack-backend
 
 go 1.19
 

@@ -1,6 +1,7 @@
 node{
     checkout scm
     def backendImage = docker.build("balansnack-backend-image")
+    backendImage.push()
 }
 
 // stage('deploy'){
