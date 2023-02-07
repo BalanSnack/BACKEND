@@ -25,7 +25,7 @@ pipeline{
                             sshTransfer(
                                 sourceFiles: 'backend',
                                 remoteDirectory: '/usr/local/backend',
-                                execCommand: 'cd /usr/local/backend && ./backend'
+                                execCommand: './backend'
                             )
                         ],
                         verbose: true
