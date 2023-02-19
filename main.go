@@ -1,17 +1,25 @@
 package main
 
 import (
-	"net/http"
+	"github.com/BalanSnack/BACKEND/conf"
+	"github.com/BalanSnack/BACKEND/handler"
+	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
+	conf.Setup()
+	// logrus setting
+	logrus.SetFormatter(&logrus.TextFormatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		FullTimestamp:   true,
 	})
-	r.Run("0.0.0.0:5000") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	logrus.SetOutput(os.Stdout)
+	logrus.SetReportCaller(true)
+	logrus.SetLevel(logrus.TraceLevel)
+
+	r := handler.NewGinEngine()
+
+	r.Run("localhost:5000")
 }
