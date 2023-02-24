@@ -1,0 +1,16 @@
+jwt: {
+  access_token_expiry_hour: 2,
+  refresh_token_expiry_hour: 168,
+  access_token_secret: "access_token_secret",
+  refresh_token_secret: "refresh_token_secret"
+}
+
+google: {
+  client_id: "your_client_id",
+  client_secret: "your_client_secret",
+  redirect_uri: "your_redirect_uri"
+}
+
+kakao: {
+
+}

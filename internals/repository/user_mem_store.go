@@ -1,56 +1,56 @@
-package repo
+package repository
 
 import (
 	"fmt"
 	"sync"
 )
 
-type UserMemStore struct {
+type userMemStore struct {
 	sync.Mutex
 
 	store  map[uint64]User
 	nextId uint64
 }
 
-func NewUserMemStore() *UserMemStore {
-	us := &UserMemStore{
+func NewUserMemStore() *userMemStore {
+	us := &userMemStore{
 		store:  make(map[uint64]User),
 		nextId: 0,
 	}
 	return us
 }
 
-func (s *UserMemStore) Create(avatarId uint64, email, provider string) User {
+func (s *userMemStore) Create(avatarId uint64, email, provider string) User {
 	s.Lock()
 	defer s.Unlock()
 
 	user := User{
-		Id:       s.nextId,
+		UserId:   s.nextId,
 		AvatarId: avatarId,
 		Email:    email,
 		Provider: provider}
 
-	s.store[user.Id] = user
+	s.store[user.UserId] = user
 	s.nextId++
 
 	return user
 }
 
-func (s *UserMemStore) Delete(id uint64) error {
+func (s *userMemStore) Delete(userId uint64) error {
 	s.Lock()
 	defer s.Unlock()
 
-	_, ok := s.store[id]
+	_, ok := s.store[userId]
 	if !ok {
-		return fmt.Errorf("user with id=%v not found", id)
+		return fmt.Errorf("user with userId=%v not found", userId)
 	}
 
-	delete(s.store, id)
+	delete(s.store, userId)
 
 	return nil
 }
 
-func (s *UserMemStore) GetUserByEmailAndProvider(email, provider string) (User, error) {
+func (s *userMemStore) GetByEmailAndProvider(email, provider string) (User, error) {
 	s.Lock()
 	defer s.Unlock()
 
