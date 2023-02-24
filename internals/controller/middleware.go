@@ -1,13 +1,13 @@
 package controller
 
 import (
-	"github.com/didnlie23/go-mvc/internals/util"
+	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/gin-gonic/gin"
 	"log"
 	"strings"
 )
 
-func AuthJwt() gin.HandlerFunc {
+func CheckAccessToken() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := ctx.Request.Header.Get("Authorization")
 		if auth == "" {

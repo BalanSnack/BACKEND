@@ -1,7 +1,7 @@
 package service
 
 import (
-	"github.com/didnlie23/go-mvc/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/repository"
 	"log"
 )
 

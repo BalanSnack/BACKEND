@@ -1,4 +1,4 @@
-module github.com/didnlie23/go-mvc
+module github.com/BalanSnack/BACKEND
 
 go 1.19
 

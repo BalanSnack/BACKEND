@@ -1,9 +1,9 @@
 package app
 
 import (
-	"github.com/didnlie23/go-mvc/internals/controller"
-	"github.com/didnlie23/go-mvc/internals/repository"
-	"github.com/didnlie23/go-mvc/internals/service"
+	"github.com/BalanSnack/BACKEND/internals/controller"
+	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,17 +11,18 @@ func Run() {
 	avatarMemStore := repository.NewAvatarMemStore()
 	userMemStore := repository.NewUserMemStore()
 
-	loginService := service.NewLoginService(userMemStore, avatarMemStore)
+	authService := service.NewAuthService(userMemStore, avatarMemStore)
 	avatarService := service.NewAvatarService(avatarMemStore)
 
-	loginController := controller.NewLoginController(loginService)
+	authController := controller.NewAuthController(authService)
 	avatarController := controller.NewAvatarController(avatarService)
 
 	r := gin.Default()
 
-	r.GET("/login/:provider", loginController.Login)
-	r.GET("/callback/:provider", loginController.Callback)
-	r.GET("/avatar", controller.AuthJwt(), avatarController.GetByAvatarId)
+	r.GET("/login/:provider", authController.Login)
+	r.GET("/callback/:provider", authController.Callback)
+	r.GET("/avatar", controller.CheckAccessToken(), avatarController.GetByAvatarId)
+	r.GET("/refresh")
 
 	r.Run("localhost:5000")
 }

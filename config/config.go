@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/didnlie23/go-mvc/internals/util"
+	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/spf13/viper"
 	"log"
 )

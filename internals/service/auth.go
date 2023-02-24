@@ -3,54 +3,54 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"github.com/didnlie23/go-mvc/internals/entity"
-	"github.com/didnlie23/go-mvc/internals/repository"
-	"github.com/didnlie23/go-mvc/internals/util"
+	"github.com/BalanSnack/BACKEND/internals/entity"
+	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/util"
 	"io"
 	"log"
 )
 
-type LoginService struct {
+type AuthService struct {
 	userRepository   repository.UserRepository
 	avatarRepository repository.AvatarRepository
 }
 
-func NewLoginService(userRepository repository.UserRepository, avatarRepository repository.AvatarRepository) *LoginService {
-	return &LoginService{
+func NewAuthService(userRepository repository.UserRepository, avatarRepository repository.AvatarRepository) *AuthService {
+	return &AuthService{
 		userRepository:   userRepository,
 		avatarRepository: avatarRepository,
 	}
 }
 
-func (s *LoginService) GetGoogleLoginPageUrl(state string) string {
+func (s *AuthService) GetGoogleLoginPageUrl(state string) string {
 	return util.GoogleOAuthConfig.AuthCodeURL(state)
 }
 
-func (s *LoginService) GetGoogleLoginResponse(code string) (entity.LoginResponse, error) {
+func (s *AuthService) GetGoogleLoginResponse(code string) (entity.TokenResponse, error) {
 	token, err := util.GoogleOAuthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	client := util.GoogleOAuthConfig.Client(context.Background(), token)
 	res, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo") // 개선 필요
 	if err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 	defer res.Body.Close()
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	var userInfo util.GoogleUserInfo
 	if err = json.Unmarshal(data, &userInfo); err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	user, err := s.userRepository.GetByEmailAndProvider(userInfo.Email, "google")
@@ -62,21 +62,21 @@ func (s *LoginService) GetGoogleLoginResponse(code string) (entity.LoginResponse
 	accessToken, err := util.JwtConfig.CreateAccessToken(user.AvatarId)
 	if err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 	refreshToken, err := util.JwtConfig.CreateRefreshToken(user.AvatarId)
 	if err != nil {
 		log.Println(err)
-		return entity.LoginResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
-	return entity.LoginResponse{
+	return entity.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
 }
 
-func (s *LoginService) getGoogleUserInfo(code string) (util.GoogleUserInfo, error) {
+func (s *AuthService) getGoogleUserInfo(code string) (util.GoogleUserInfo, error) {
 	token, err := util.GoogleOAuthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Println(err)

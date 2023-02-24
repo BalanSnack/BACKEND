@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/didnlie23/go-mvc/config"
-	"github.com/didnlie23/go-mvc/internals/app"
+	"github.com/BalanSnack/BACKEND/config"
+	"github.com/BalanSnack/BACKEND/internals/app"
 )
 
 func main() {

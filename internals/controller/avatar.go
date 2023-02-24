@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/didnlie23/go-mvc/internals/service"
+	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
