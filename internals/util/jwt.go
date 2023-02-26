@@ -14,6 +14,7 @@ type jwtConfig struct {
 	refreshTokenExpiryHour int
 	accessTokenSecret      string
 	refreshTokenSecret     string
+	refreshTokenMap        map[uint64]map[string]bool
 }
 
 func init() {
@@ -25,6 +26,7 @@ func SetJwtUtilConfig(accessTokenExpiryHour, refreshTokenExpiryHour int, accessT
 	JwtConfig.refreshTokenExpiryHour = refreshTokenExpiryHour
 	JwtConfig.accessTokenSecret = accessTokenSecret
 	JwtConfig.refreshTokenSecret = refreshTokenSecret
+	JwtConfig.refreshTokenMap = make(map[uint64]map[string]bool)
 }
 
 func (ju *jwtConfig) CreateAccessToken(avatarId uint64) (string, error) {
@@ -49,6 +51,18 @@ func (ju *jwtConfig) CreateRefreshToken(avatarId uint64) (string, error) {
 		log.Println(err)
 		return "", err
 	}
+
+	m, ok := ju.refreshTokenMap[avatarId]
+	if !ok {
+		ju.refreshTokenMap[avatarId] = make(map[string]bool)
+		m = ju.refreshTokenMap[avatarId]
+	}
+
+	for k, _ := range m {
+		m[k] = false
+	}
+
+	ju.refreshTokenMap[avatarId][refreshToken] = true
 
 	return refreshToken, nil
 }
@@ -83,4 +97,8 @@ func (ju *jwtConfig) ParseAndValidateRefreshToken(tokenString string) (jwt.MapCl
 		log.Println(err)
 		return nil, err
 	}
+}
+
+func (ju *jwtConfig) CheckTokenExpiration(avatarId uint64, tokenString string) bool {
+	return ju.refreshTokenMap[avatarId][tokenString]
 }

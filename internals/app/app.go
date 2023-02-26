@@ -21,8 +21,8 @@ func Run() {
 
 	r.GET("/login/:provider", authController.Login)
 	r.GET("/callback/:provider", authController.Callback)
+	r.GET("/refresh", authController.Refresh)
 	r.GET("/avatar", controller.CheckAccessToken(), avatarController.GetByAvatarId)
-	r.GET("/refresh")
 
 	r.Run("localhost:5000")
 }
