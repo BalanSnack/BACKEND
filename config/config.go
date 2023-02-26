@@ -1,6 +1,7 @@
 package config
 
 import (
+	docs "github.com/BalanSnack/BACKEND/docs"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/spf13/viper"
 	"log"
@@ -24,4 +25,6 @@ func Setup() {
 		viper.GetString("google.client_id"),
 		viper.GetString("google.client_secret"),
 		viper.GetString("google.redirect_uri"))
+
+	docs.SwaggerInfo.Title = "BalanSnack Server API"
 }

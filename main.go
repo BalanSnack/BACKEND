@@ -5,6 +5,10 @@ import (
 	"github.com/BalanSnack/BACKEND/internals/app"
 )
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+
 func main() {
 	// configuration
 	config.Setup()

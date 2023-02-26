@@ -24,6 +24,13 @@ func NewAuthController(authService *service.AuthService) *AuthController {
 	}
 }
 
+// Login
+// @Summary 로그인 페이지로 리다이렉트
+// @Description 구글("google") 로그인 혹은 카카오("kakao") 로그인 페이지로 리다이렉트
+// @Param provider path string true "provider name"
+// @Success 200 {object} entity.TokenResponse
+// @Failure 500 {object} util.HTTPError
+// @Router /login/{provider} [get]
 func (c *AuthController) Login(ctx *gin.Context) {
 	var url string
 
@@ -48,12 +55,12 @@ func (c *AuthController) Callback(ctx *gin.Context) {
 	switch provider {
 	case "google":
 		if ctx.Query("state") != state {
-			ctx.String(http.StatusInternalServerError, "response's state is different with request's state")
+			util.NewError(ctx, http.StatusInternalServerError, errors.New("response's state is different with request's state"))
 			return
 		}
 		response, err = c.authService.GetGoogleLoginResponse(ctx.Query("code"))
 		if err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
+			util.NewError(ctx, http.StatusInternalServerError, err)
 			return
 		}
 	case "kakao":
@@ -63,10 +70,20 @@ func (c *AuthController) Callback(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, response)
 }
 
+// Refresh
+// @Summary access token 재발급
+// @Description 요청과 함께 온 리프레시 토큰이 유효한 경우, 액세스 토큰과 리프레시을 재발급
+// @Security BearerAuth
+// @Success 200 {object} entity.TokenResponse
+// @Failure 400 {object} util.HTTPError
+// @Failure 401 {object} util.HTTPError
+// @Failure 406 {object} util.HTTPError
+// @Failure 500 {object} util.HTTPError
+// @Router /refresh [get]
 func (c *AuthController) Refresh(ctx *gin.Context) {
 	header := ctx.GetHeader("Authorization")
 	if header == "" {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("header's authorization is empty"))
+		util.NewError(ctx, http.StatusBadRequest, errors.New("header's authorization is empty"))
 		return
 	}
 
@@ -76,7 +93,7 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 
 		claims, err := util.JwtConfig.ParseAndValidateRefreshToken(tokenString)
 		if err != nil {
-			ctx.AbortWithError(http.StatusUnauthorized, err)
+			util.NewError(ctx, http.StatusUnauthorized, err)
 			return
 		}
 
@@ -84,25 +101,25 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 
 		expiration := util.JwtConfig.CheckTokenExpiration(avatarId, tokenString)
 		if !expiration {
-			ctx.AbortWithError(http.StatusNotAcceptable, errors.New("expired token"))
+			util.NewError(ctx, http.StatusNotAcceptable, errors.New("expired token"))
 			return
 		}
 
 		accessToken, err := util.JwtConfig.CreateAccessToken(avatarId)
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			util.NewError(ctx, http.StatusInternalServerError, err)
 			return
 		}
 
 		refreshToken, err := util.JwtConfig.CreateRefreshToken(avatarId)
 		if err != nil {
-			ctx.AbortWithError(http.StatusInternalServerError, err)
+			util.NewError(ctx, http.StatusInternalServerError, err)
 			return
 		}
 
 		ctx.JSON(http.StatusOK, entity.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
 	} else {
-		ctx.AbortWithError(http.StatusBadRequest, errors.New("failed to extract token string from header's authorization"))
+		util.NewError(ctx, http.StatusBadRequest, errors.New("failed to extract token string from header's authorization"))
 		return
 	}
 }
