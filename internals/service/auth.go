@@ -39,7 +39,12 @@ func (s *AuthService) GetKakaoLoginResponse(code string) (res.TokenResponse, err
 		log.Println(err)
 		return res.TokenResponse{}, err
 	}
-	defer response.Body.Close()
+	defer func() {
+		err = response.Body.Close()
+		if err != nil {
+			// what should i do?
+		}
+	}()
 
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -59,14 +64,8 @@ func (s *AuthService) GetKakaoLoginResponse(code string) (res.TokenResponse, err
 		user = s.userRepository.Create(avatar.AvatarId, userInfo.KakaoAccount.Email, "kakao")
 	}
 
-	accessToken, err := util.JwtConfig.CreateAccessToken(user.AvatarId)
+	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(user.AvatarId)
 	if err != nil {
-		log.Println(err)
-		return res.TokenResponse{}, err
-	}
-	refreshToken, err := util.JwtConfig.CreateRefreshToken(user.AvatarId)
-	if err != nil {
-		log.Println(err)
 		return res.TokenResponse{}, err
 	}
 
@@ -93,7 +92,12 @@ func (s *AuthService) GetGoogleLoginResponse(code string) (res.TokenResponse, er
 		log.Println(err)
 		return res.TokenResponse{}, err
 	}
-	defer response.Body.Close()
+	defer func() {
+		err = response.Body.Close()
+		if err != nil {
+			// what should i do?
+		}
+	}()
 
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -113,14 +117,8 @@ func (s *AuthService) GetGoogleLoginResponse(code string) (res.TokenResponse, er
 		user = s.userRepository.Create(avatar.AvatarId, userInfo.Email, "google")
 	}
 
-	accessToken, err := util.JwtConfig.CreateAccessToken(user.AvatarId)
+	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(user.AvatarId)
 	if err != nil {
-		log.Println(err)
-		return res.TokenResponse{}, err
-	}
-	refreshToken, err := util.JwtConfig.CreateRefreshToken(user.AvatarId)
-	if err != nil {
-		log.Println(err)
 		return res.TokenResponse{}, err
 	}
 
@@ -138,14 +136,19 @@ func (s *AuthService) getGoogleUserInfo(code string) (util.GoogleUserInfo, error
 	}
 
 	client := util.GoogleOAuthConfig.Client(context.Background(), token)
-	res, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo") // 개선 필요
+	response, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo") // 개선 필요
 	if err != nil {
 		log.Println(err)
 		return util.GoogleUserInfo{}, err
 	}
-	defer res.Body.Close()
+	defer func() {
+		err = response.Body.Close()
+		if err != nil {
+			// what should i do?
+		}
+	}()
 
-	data, err := io.ReadAll(res.Body)
+	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
 		return util.GoogleUserInfo{}, err

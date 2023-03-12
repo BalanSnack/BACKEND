@@ -22,7 +22,7 @@ func CheckAccessToken() gin.HandlerFunc {
 				log.Println(err)
 				ctx.Abort()
 			}
-			ctx.Set("avatarId", uint64(claims["avatarId"].(float64))) // https://stackoverflow.com/questions/70705673/panic-interface-conversion-interface-is-float64-not-int64
+			ctx.Set("avatarId", uint64(claims["avatarId"].(float64)))
 			ctx.Next()
 		} else {
 			ctx.Abort()

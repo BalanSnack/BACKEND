@@ -106,21 +106,15 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 
 		avatarId := uint64(claims["avatarId"].(float64))
 
-		expiration := util.JwtConfig.CheckTokenExpiration(avatarId, tokenString)
+		expiration := util.JwtConfig.CheckRefreshTokenExpiration(avatarId, tokenString)
 		if !expiration {
 			util.NewError(ctx, http.StatusNotAcceptable, errors.New("expired token"))
 			return
 		}
 
-		accessToken, err := util.JwtConfig.CreateAccessToken(avatarId)
+		accessToken, refreshToken, err := util.JwtConfig.CreateTokens(avatarId)
 		if err != nil {
-			util.NewError(ctx, http.StatusInternalServerError, err)
-			return
-		}
-
-		refreshToken, err := util.JwtConfig.CreateRefreshToken(avatarId)
-		if err != nil {
-			util.NewError(ctx, http.StatusInternalServerError, err)
+			util.NewError(ctx, http.StatusInternalServerError, errors.New("failed to create tokens"))
 			return
 		}
 
