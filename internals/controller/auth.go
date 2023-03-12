@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	"github.com/BalanSnack/BACKEND/internals/entity"
+	"github.com/BalanSnack/BACKEND/internals/entity/res"
 	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/gin-gonic/gin"
@@ -39,6 +39,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	case "google":
 		url = c.authService.GetGoogleLoginPageUrl(state)
 	case "kakao":
+		url = c.authService.GetKakaoLoginPageUrl(state)
 	default:
 	}
 
@@ -47,23 +48,29 @@ func (c *AuthController) Login(ctx *gin.Context) {
 
 func (c *AuthController) Callback(ctx *gin.Context) {
 	var (
-		response entity.TokenResponse
+		response res.TokenResponse
 		err      error
 	)
+
+	if ctx.Query("state") != state {
+		util.NewError(ctx, http.StatusInternalServerError, errors.New("res's state is different with req's state"))
+		return
+	}
 
 	provider := ctx.Params.ByName("provider")
 	switch provider {
 	case "google":
-		if ctx.Query("state") != state {
-			util.NewError(ctx, http.StatusInternalServerError, errors.New("response's state is different with request's state"))
-			return
-		}
 		response, err = c.authService.GetGoogleLoginResponse(ctx.Query("code"))
 		if err != nil {
 			util.NewError(ctx, http.StatusInternalServerError, err)
 			return
 		}
 	case "kakao":
+		response, err = c.authService.GetKakaoLoginResponse(ctx.Query("code"))
+		if err != nil {
+			util.NewError(ctx, http.StatusInternalServerError, err)
+			return
+		}
 	default:
 	}
 
@@ -117,7 +124,7 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, entity.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
+		ctx.JSON(http.StatusOK, res.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
 	} else {
 		util.NewError(ctx, http.StatusBadRequest, errors.New("failed to extract token string from header's authorization"))
 		return

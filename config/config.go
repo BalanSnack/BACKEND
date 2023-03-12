@@ -26,5 +26,10 @@ func Setup() {
 		viper.GetString("google.client_secret"),
 		viper.GetString("google.redirect_uri"))
 
+	util.SetKakaoOAuthConfig(
+		viper.GetString("kakao.client_id"),
+		viper.GetString("kakao.client_secret"),
+		viper.GetString("kakao.redirect_uri"))
+
 	docs.SwaggerInfo.Title = "BalanSnack Server API"
 }

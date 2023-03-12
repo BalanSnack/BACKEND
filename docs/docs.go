@@ -151,7 +151,7 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "status bad request"
+                    "example": "status bad req"
                 }
             }
         }
