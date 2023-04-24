@@ -5,22 +5,22 @@ import (
 	"sync"
 )
 
-type avatarMemStore struct {
+type AvatarMemStore struct {
 	sync.Mutex
 
 	store  map[uint64]Avatar
 	nextId uint64
 }
 
-func NewAvatarMemStore() *avatarMemStore {
-	as := &avatarMemStore{
+func NewAvatarMemStore() *AvatarMemStore {
+	as := &AvatarMemStore{
 		store:  make(map[uint64]Avatar),
 		nextId: 0}
 
 	return as
 }
 
-func (s *avatarMemStore) Create(nickname, profile string, anonymity bool) Avatar {
+func (s *AvatarMemStore) Create(nickname, profile string, anonymity bool) Avatar {
 	s.Lock()
 	defer s.Unlock()
 
@@ -36,7 +36,7 @@ func (s *avatarMemStore) Create(nickname, profile string, anonymity bool) Avatar
 	return avatar
 }
 
-func (s *avatarMemStore) Update(avatarId uint64, nickname, profile string) (Avatar, error) {
+func (s *AvatarMemStore) Update(avatarId uint64, nickname, profile string) (Avatar, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -52,7 +52,7 @@ func (s *avatarMemStore) Update(avatarId uint64, nickname, profile string) (Avat
 	return avatar, nil
 }
 
-func (s *avatarMemStore) Delete(avatarId uint64) error {
+func (s *AvatarMemStore) Delete(avatarId uint64) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -66,9 +66,7 @@ func (s *avatarMemStore) Delete(avatarId uint64) error {
 	return nil
 }
 
-func (s *avatarMemStore) GetByAvatarId(avatarId uint64) (Avatar, error) {
-	s.Lock()
-	defer s.Unlock()
+func (s *AvatarMemStore) GetByAvatarId(avatarId uint64) (Avatar, error) {
 
 	avatar, ok := s.store[avatarId]
 	if !ok {

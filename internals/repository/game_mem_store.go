@@ -6,23 +6,21 @@ import (
 	"time"
 )
 
-type gameMemStore struct {
+type GameMemStore struct {
 	sync.Mutex
 
 	store  map[uint64]Game
 	nextId uint64
 }
 
-func NewGameMemStore() *gameMemStore {
-	return &gameMemStore{
+func NewGameMemStore() *GameMemStore {
+	return &GameMemStore{
 		store:  make(map[uint64]Game),
 		nextId: 0,
 	}
 }
 
-func (s *gameMemStore) GetByGameId(gameId uint64) (Game, error) {
-	s.Lock()
-	defer s.Unlock()
+func (s *GameMemStore) GetByGameId(gameId uint64) (Game, error) {
 
 	game, ok := s.store[gameId]
 	if !ok {
@@ -32,7 +30,7 @@ func (s *gameMemStore) GetByGameId(gameId uint64) (Game, error) {
 	return game, nil
 }
 
-func (s *gameMemStore) Create(game Game) (Game, error) {
+func (s *GameMemStore) Create(game Game) (Game, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -45,7 +43,7 @@ func (s *gameMemStore) Create(game Game) (Game, error) {
 	return game, nil
 }
 
-func (s *gameMemStore) Update(game Game) (Game, error) {
+func (s *GameMemStore) Update(game Game) (Game, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -63,7 +61,7 @@ func (s *gameMemStore) Update(game Game) (Game, error) {
 	}
 }
 
-func (s *gameMemStore) Delete(avatarId, gameId uint64) error {
+func (s *GameMemStore) Delete(avatarId, gameId uint64) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -80,7 +78,7 @@ func (s *gameMemStore) Delete(avatarId, gameId uint64) error {
 	}
 }
 
-func (s *gameMemStore) GetByTagId(tagId uint64) []Game {
+func (s *GameMemStore) GetByTagId(tagId uint64) []Game {
 	result := make([]Game, 1)
 
 	for _, v := range s.store {
@@ -92,7 +90,7 @@ func (s *gameMemStore) GetByTagId(tagId uint64) []Game {
 	return result
 }
 
-func (s *gameMemStore) GetAll() []Game {
+func (s *GameMemStore) GetAll() []Game {
 	result := make([]Game, 0, len(s.store))
 
 	for _, v := range s.store {

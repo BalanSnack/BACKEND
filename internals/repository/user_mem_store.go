@@ -5,22 +5,22 @@ import (
 	"sync"
 )
 
-type userMemStore struct {
+type UserMemStore struct {
 	sync.Mutex
 
 	store  map[uint64]User
 	nextId uint64
 }
 
-func NewUserMemStore() *userMemStore {
-	us := &userMemStore{
+func NewUserMemStore() *UserMemStore {
+	us := &UserMemStore{
 		store:  make(map[uint64]User),
 		nextId: 0,
 	}
 	return us
 }
 
-func (s *userMemStore) Create(avatarId uint64, email, provider string) User {
+func (s *UserMemStore) Create(avatarId uint64, email, provider string) User {
 	s.Lock()
 	defer s.Unlock()
 
@@ -36,7 +36,7 @@ func (s *userMemStore) Create(avatarId uint64, email, provider string) User {
 	return user
 }
 
-func (s *userMemStore) Delete(userId uint64) error {
+func (s *UserMemStore) Delete(userId uint64) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -50,7 +50,7 @@ func (s *userMemStore) Delete(userId uint64) error {
 	return nil
 }
 
-func (s *userMemStore) GetByEmailAndProvider(email, provider string) (User, error) {
+func (s *UserMemStore) GetByEmailAndProvider(email, provider string) (User, error) {
 	s.Lock()
 	defer s.Unlock()
 
