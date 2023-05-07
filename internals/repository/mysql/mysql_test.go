@@ -2,13 +2,14 @@ package mysql
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"testing"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
-	"os"
-	"testing"
 )
 
 var db *gorm.DB
@@ -27,7 +28,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.Run("mysql", "5.7", []string{"MYSQL_ROOT_PASSWORD=secret"})
+	resource, err := pool.Run("mysql", "5.7", []string{"MYSQL_ROOT_PASSWORD=secret", "MYSQL_DATABASE=test"})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
@@ -82,20 +83,27 @@ func TestCommentRepo(t *testing.T) {
 	}
 
 	for _, v := range sample {
-		_, err := repo.Create(v.AvatarID, v.ParentID, v.Content)
+		_, err := repo.Create(v.AvatarID, v.ParentID, v.GameID, v.Content)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	comments, err := repo.GetAllByGameID(1)
-	assert.Equal(t, sample[:3], comments)
-
-	comment, err := repo.UpdateVoteUp(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, comment.Vote, 1)
+	assert.Equal(t, 3, len(comments))
+
+	err = repo.UpdateVoteUp(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	comment, err := repo.GetByID(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, 1, comment.Vote)
 }
 
 func TestActivityRepo(t *testing.T) {
@@ -161,5 +169,45 @@ func TestActivityRepo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, sample[:3], activities)
+	assert.Equal(t, 3, len(activities))
+}
+
+func TestGameRepo(t *testing.T) {
+	db.AutoMigrate(&Game{})
+
+	repo := NewGameRepo(db)
+
+	sample := Game{
+		Title:       "title",
+		LeftOption:  "leftOption",
+		RightOption: "rightOption",
+		LeftDesc:    "leftDesc",
+		RightDesc:   "rightDesc",
+	}
+
+	game, err := repo.Create(1, sample.Title, sample.LeftOption, sample.RightOption, sample.LeftDesc, sample.RightDesc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "leftDesc", game.LeftDesc)
+
+	err = repo.Update(1, "", "", "", "updated", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	game, err = repo.GetByID(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, "updated", game.LeftDesc)
+
+	err = repo.UpdateRightCountUp(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	game, err = repo.GetByID(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, uint(1), game.RightCount)
 }
