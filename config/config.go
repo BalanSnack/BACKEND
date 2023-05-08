@@ -1,13 +1,19 @@
 package config
 
 import (
-	docs "github.com/BalanSnack/BACKEND/docs"
-	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/spf13/viper"
+	"golang.org/x/oauth2/google"
+	"golang.org/x/oauth2/kakao"
 	"log"
 )
 
-func Setup() {
+type Config struct {
+	GoogleOAuthConfig GoogleOAuthConfig
+	KakaoOAuthConfig  KakaoOAuthConfig
+	JwtConfig         JwtConfig
+}
+
+func NewConfig() (*Config, error) {
 	viper.SetConfigFile("config.yaml")
 
 	err := viper.ReadInConfig()
@@ -15,21 +21,31 @@ func Setup() {
 		log.Fatal(err)
 	}
 
-	util.SetJwtUtilConfig(
-		viper.GetInt("jwt.access_token_expiry_hour"),
-		viper.GetInt("jwt.refresh_token_expiry_hour"),
-		viper.GetString("jwt.access_token_secret"),
-		viper.GetString("jwt.refresh_token_secret"))
+	newGoogleConfig := GoogleOAuthConfig{
+		ClientId:     viper.GetString("google.client_id"),
+		ClientSecret: viper.GetString("google.client_secret"),
+		Endpoint:     google.Endpoint,
+		RedirectUri:  viper.GetString("google.redirect_uri"),
+		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
+	}
 
-	util.SetGoogleOAuthConfig(
-		viper.GetString("google.client_id"),
-		viper.GetString("google.client_secret"),
-		viper.GetString("google.redirect_uri"))
+	newKakaoConfig := KakaoOAuthConfig{
+		ClientId:     viper.GetString("kakao.client_id"),
+		ClientSecret: viper.GetString("kakao.client_secret"),
+		Endpoint:     kakao.Endpoint,
+		RedirectUri:  viper.GetString("google.redirect_uri"),
+	}
 
-	util.SetKakaoOAuthConfig(
-		viper.GetString("kakao.client_id"),
-		viper.GetString("kakao.client_secret"),
-		viper.GetString("kakao.redirect_uri"))
+	newJWTConfig := JwtConfig{
+		AccessTokenExpiryHour:  viper.GetInt("jwt.access_token_expiry_hour"),
+		RefreshTokenExpiryHour: viper.GetInt("jwt.refresh_token_expiry_hour"),
+		accessTokenSecret:      viper.GetString("jwt.access_token_secret"),
+		refreshTokenSecret:     viper.GetString("jwt.refresh_token_secret"),
+	}
 
-	docs.SwaggerInfo.Title = "BalanSnack Server API"
+	return &Config{
+		GoogleOAuthConfig: newGoogleConfig,
+		KakaoOAuthConfig:  newKakaoConfig,
+		JwtConfig:         newJWTConfig,
+	}, nil
 }

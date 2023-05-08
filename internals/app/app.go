@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/BalanSnack/BACKEND/config"
 	_ "github.com/BalanSnack/BACKEND/docs"
 	"github.com/BalanSnack/BACKEND/internals/controller"
 	"github.com/BalanSnack/BACKEND/internals/repository"
@@ -10,7 +11,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Run() {
+func Run(cfg *config.Config) {
+
 	avatarMemStore := repository.NewAvatarMemStore()
 	userMemStore := repository.NewUserMemStore()
 	gameMemStore := repository.NewGameMemStore()
