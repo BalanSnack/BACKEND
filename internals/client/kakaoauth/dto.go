@@ -1,38 +1,6 @@
-package util
+package kakaoauth
 
-import (
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"golang.org/x/oauth2/kakao"
-	"time"
-)
-
-var (
-	GoogleOAuthConfig *oauth2.Config
-	KakaoOAuthConfig  *oauth2.Config
-)
-
-func init() {
-	GoogleOAuthConfig = &oauth2.Config{
-		Scopes:   []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
-		Endpoint: google.Endpoint,
-	}
-	KakaoOAuthConfig = &oauth2.Config{
-		Endpoint: kakao.Endpoint,
-	}
-}
-
-type GoogleUserInfo struct {
-	Sub           string `json:"sub"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Profile       string `json:"profile"`
-	Picture       string `json:"picture"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Gender        string `json:"gender"`
-}
+import "time"
 
 type Profile struct {
 	Nickname          string `json:"nickname"`

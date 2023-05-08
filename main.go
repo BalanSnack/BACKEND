@@ -11,7 +11,11 @@ import (
 
 func main() {
 	// configuration
-	config.Setup()
+	cfg, err := config.NewConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	// run server
-	app.Run()
+	app.Run(cfg)
 }
