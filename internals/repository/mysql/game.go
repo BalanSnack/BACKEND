@@ -25,7 +25,8 @@ func (r *GameRepo) Create(avatarID uint, title, leftOption, rightOption, leftDes
 	return game, err
 }
 
-func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rightDesc string) (game Game, err error) {
+func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rightDesc string) (affected int64, err error) {
+	var game Game
 	game.ID = id
 
 	tx := r.db.Model(&game).Updates(map[string]interface{}{
@@ -38,21 +39,17 @@ func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rig
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) Delete(id uint) (err error) {
+func (r *GameRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Game{}, id)
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
@@ -65,7 +62,7 @@ func (r *GameRepo) GetByID(id uint) (Game, error) {
 	return game, err
 }
 
-func (r *GameRepo) UpdateView(id uint) (err error) {
+func (r *GameRepo) UpdateView(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -73,14 +70,12 @@ func (r *GameRepo) UpdateView(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateVoteUp(id uint) (err error) {
+func (r *GameRepo) UpdateVoteUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -88,14 +83,12 @@ func (r *GameRepo) UpdateVoteUp(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateVoteDown(id uint) (err error) {
+func (r *GameRepo) UpdateVoteDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -103,14 +96,12 @@ func (r *GameRepo) UpdateVoteDown(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateLeftCountUp(id uint) (err error) {
+func (r *GameRepo) UpdateLeftCountUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -118,14 +109,12 @@ func (r *GameRepo) UpdateLeftCountUp(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateLeftCountDown(id uint) (err error) {
+func (r *GameRepo) UpdateLeftCountDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -133,14 +122,12 @@ func (r *GameRepo) UpdateLeftCountDown(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateRightCountUp(id uint) (err error) {
+func (r *GameRepo) UpdateRightCountUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -148,14 +135,12 @@ func (r *GameRepo) UpdateRightCountUp(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *GameRepo) UpdateRightCountDown(id uint) (err error) {
+func (r *GameRepo) UpdateRightCountDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
 
@@ -163,9 +148,7 @@ func (r *GameRepo) UpdateRightCountDown(id uint) (err error) {
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }

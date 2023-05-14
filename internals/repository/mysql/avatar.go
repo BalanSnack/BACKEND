@@ -18,42 +18,38 @@ func (r *AvatarRepo) Create(nick string, profile string) (Avatar, error) {
 	return avatar, err
 }
 
-func (r *AvatarRepo) UpdateNick(id uint, nick string) (avatar Avatar, err error) {
+func (r *AvatarRepo) UpdateNick(id uint, nick string) (affected int64, err error) {
+	var avatar Avatar
 	avatar.ID = id
 
 	tx := r.db.Model(&avatar).Update("nick", nick)
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *AvatarRepo) UpdateProfile(id uint, profile string) (avatar Avatar, err error) {
+func (r *AvatarRepo) UpdateProfile(id uint, profile string) (affected int64, err error) {
+	var avatar Avatar
 	avatar.ID = id
 
 	tx := r.db.Model(&avatar).Update("profile", profile)
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
 
-func (r *AvatarRepo) Delete(id uint) (err error) {
+func (r *AvatarRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Avatar{}, id)
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }

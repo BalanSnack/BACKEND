@@ -53,14 +53,12 @@ func (r *ActivityRepo) CreateVoteComment(avatarID, gameID, commentID uint, choic
 	return err
 }
 
-func (r *ActivityRepo) Delete(id uint) (err error) {
+func (r *ActivityRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Activity{}, id)
 	if err = tx.Error; err != nil {
 		return
 	}
-	if tx.RowsAffected == 0 {
-		err = gorm.ErrRecordNotFound
-	}
+	affected = tx.RowsAffected
 
 	return
 }
