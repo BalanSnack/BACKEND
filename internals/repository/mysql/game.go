@@ -29,13 +29,25 @@ func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rig
 	var game Game
 	game.ID = id
 
-	tx := r.db.Model(&game).Updates(map[string]interface{}{
-		"title":        title,
-		"left_option":  leftOption,
-		"right_option": rightOption,
-		"left_desc":    leftDesc,
-		"right_desc":   rightDesc,
-	})
+	list := make(map[string]interface{})
+
+	if title != "" {
+		list["title"] = title
+	}
+	if leftOption != "" {
+		list["left_option"] = leftOption
+	}
+	if rightOption != "" {
+		list["right_option"] = rightOption
+	}
+	if leftDesc != "" {
+		list["left_desc"] = leftDesc
+	}
+	if rightDesc != "" {
+		list["right_desc"] = rightDesc
+	}
+
+	tx := r.db.Model(&game).Updates(list)
 	if err = tx.Error; err != nil {
 		return
 	}
