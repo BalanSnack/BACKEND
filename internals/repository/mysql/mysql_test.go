@@ -95,9 +95,9 @@ func TestCommentRepo(t *testing.T) {
 	}
 	assert.Equal(t, 3, len(comments))
 
-	err = repo.UpdateVoteUp(1)
-	if err != nil {
-		t.Fatal(err)
+	affected, err := repo.UpdateVoteUp(1)
+	if err != nil || affected != 1 {
+		t.Fatalf("repo.UpdateVoteUp(1) failed; error: %s, affected: %d", err, affected)
 	}
 	comment, err := repo.GetByID(1)
 	if err != nil {
@@ -191,9 +191,9 @@ func TestGameRepo(t *testing.T) {
 	}
 	assert.Equal(t, "leftDesc", game.LeftDesc)
 
-	err = repo.Update(1, "", "", "", "updated", "")
-	if err != nil {
-		t.Fatal(err)
+	affected, err := repo.Update(1, "", "", "", "updated", "")
+	if err != nil || affected != 1 {
+		t.Fatalf("repo.Update(1, ...) failed; error: %s, affected: %d", err, affected)
 	}
 	game, err = repo.GetByID(1)
 	if err != nil {
@@ -201,9 +201,9 @@ func TestGameRepo(t *testing.T) {
 	}
 	assert.Equal(t, "updated", game.LeftDesc)
 
-	err = repo.UpdateRightCountUp(1)
-	if err != nil {
-		t.Fatal(err)
+	affected, err = repo.UpdateRightCountUp(1)
+	if err != nil || affected != 1 {
+		t.Fatalf("repo.UpdateRightCountUp(1) failed; error: %s, affected: %d", err, affected)
 	}
 	game, err = repo.GetByID(1)
 	if err != nil {
