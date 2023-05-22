@@ -10,7 +10,7 @@ func NewActivityRepo(db *gorm.DB) *ActivityRepo {
 	return &ActivityRepo{db: db}
 }
 
-// CreateJoinGame Setting the choice value to true means left, and setting false means right.
+// CreateJoinGame 게임 참여를 기록한다. choice의 경우 true는 왼쪽, false는 오른쪽 선택을 의미한다.
 func (r *ActivityRepo) CreateJoinGame(avatarID, gameID uint, choice bool) error {
 	activity := Activity{
 		AvatarID: avatarID,
@@ -24,7 +24,7 @@ func (r *ActivityRepo) CreateJoinGame(avatarID, gameID uint, choice bool) error 
 	return err
 }
 
-// CreateVoteGame Setting the choice value to true means up, and setting false means down.
+// CreateVoteGame 게임의 좋아요 및 싫어요를 기록한다. choice의 경우 true는 up, false는 down 투표를 의미한다.
 func (r *ActivityRepo) CreateVoteGame(avatarID, gameID uint, choice bool) error {
 	activity := Activity{
 		AvatarID: avatarID,
@@ -38,7 +38,7 @@ func (r *ActivityRepo) CreateVoteGame(avatarID, gameID uint, choice bool) error 
 	return err
 }
 
-// CreateVoteComment Setting the choice value to true means up, and setting false means down.
+// CreateVoteComment 댓글의 좋아요 및 싫어요를 기록한다. choice의 경우 true는 up, false는 down 투표를 의미한다.
 func (r *ActivityRepo) CreateVoteComment(avatarID, gameID, commentID uint, choice bool) error {
 	activity := Activity{
 		AvatarID:  avatarID,
@@ -53,6 +53,7 @@ func (r *ActivityRepo) CreateVoteComment(avatarID, gameID, commentID uint, choic
 	return err
 }
 
+// Delete 활동 기록을 삭제한다.
 func (r *ActivityRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Activity{}, id)
 	if err = tx.Error; err != nil {
@@ -63,6 +64,7 @@ func (r *ActivityRepo) Delete(id uint) (affected int64, err error) {
 	return
 }
 
+// GetAllByAvatarID 아바타의 활동 기록을 모두 삭제한다.
 func (r *ActivityRepo) GetAllByAvatarID(avatarID uint) ([]Activity, error) {
 	var activities []Activity
 
@@ -71,6 +73,7 @@ func (r *ActivityRepo) GetAllByAvatarID(avatarID uint) ([]Activity, error) {
 	return activities, err
 }
 
+// GetAllByAvatarIDAndGameID 아바타의 게임 참여 내역(게임 참여, 좋아요 및 싫어요)들을 조회한다.
 func (r *ActivityRepo) GetAllByAvatarIDAndGameID(avatarID, gameID uint) ([]Activity, error) {
 	var activities []Activity
 

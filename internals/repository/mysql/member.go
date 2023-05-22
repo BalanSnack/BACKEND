@@ -10,6 +10,7 @@ func NewMemberRepo(db *gorm.DB) *MemberRepo {
 	return &MemberRepo{db: db}
 }
 
+// Create 회원을 생성한다.
 func (r *MemberRepo) Create(avatarID uint, email string, provider string) (Member, error) {
 	member := Member{
 		AvatarID: avatarID,
@@ -22,6 +23,7 @@ func (r *MemberRepo) Create(avatarID uint, email string, provider string) (Membe
 	return member, err
 }
 
+// Delete 회원을 삭제한다.
 func (r *MemberRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Member{}, id)
 	if err = tx.Error; err != nil {
@@ -32,6 +34,7 @@ func (r *MemberRepo) Delete(id uint) (affected int64, err error) {
 	return
 }
 
+// GetAvatarIDByEmailAndProvider email과 provider가 일치하는 회원을 조회한다.
 func (r *MemberRepo) GetAvatarIDByEmailAndProvider(email string, provider string) (uint, error) {
 	var member Member
 

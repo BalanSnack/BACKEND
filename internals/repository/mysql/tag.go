@@ -10,6 +10,7 @@ func NewTagRepo(db *gorm.DB) *TagRepo {
 	return &TagRepo{db: db}
 }
 
+// Create 태그를 생성한다.
 func (r *TagRepo) Create(name string) (Tag, error) {
 	tag := Tag{
 		Name:  name,
@@ -21,6 +22,7 @@ func (r *TagRepo) Create(name string) (Tag, error) {
 	return tag, err
 }
 
+// Update 태그 정보를 수정한다.
 func (r *TagRepo) Update(id uint, name string) (affected int64, err error) {
 	var tag Tag
 	tag.ID = id
@@ -34,6 +36,7 @@ func (r *TagRepo) Update(id uint, name string) (affected int64, err error) {
 	return
 }
 
+// Delete 태그를 삭제한다.
 func (r *TagRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Tag{}, id)
 	if err = tx.Error; err != nil {
@@ -44,6 +47,7 @@ func (r *TagRepo) Delete(id uint) (affected int64, err error) {
 	return
 }
 
+// GetByID 태그 정보를 조회한다.
 func (r *TagRepo) GetByID(id uint) (Tag, error) {
 	var tag Tag
 

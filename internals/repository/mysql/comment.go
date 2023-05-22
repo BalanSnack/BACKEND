@@ -10,6 +10,7 @@ func NewCommentRepo(db *gorm.DB) *CommentRepo {
 	return &CommentRepo{db: db}
 }
 
+// Create 댓글을 생성한다.
 func (r *CommentRepo) Create(avatarID uint, parentID uint, gameID uint, content string) (Comment, error) {
 	comment := Comment{
 		AvatarID: avatarID,
@@ -23,6 +24,7 @@ func (r *CommentRepo) Create(avatarID uint, parentID uint, gameID uint, content 
 	return comment, err
 }
 
+// Update 댓글 내용을 수정한다.
 func (r *CommentRepo) Update(id uint, content string) (affected int64, err error) {
 	var comment Comment
 	comment.ID = id
@@ -36,6 +38,7 @@ func (r *CommentRepo) Update(id uint, content string) (affected int64, err error
 	return
 }
 
+// Delete 댓글을 삭제한다.
 func (r *CommentRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Comment{}, id)
 	if err = tx.Error; err != nil {
@@ -46,6 +49,7 @@ func (r *CommentRepo) Delete(id uint) (affected int64, err error) {
 	return
 }
 
+// GetByID 댓글 정보를 조회한다.
 func (r *CommentRepo) GetByID(id uint) (Comment, error) {
 	var comment Comment
 
@@ -54,6 +58,7 @@ func (r *CommentRepo) GetByID(id uint) (Comment, error) {
 	return comment, err
 }
 
+// GetAllByGameID 게임에 등록된 댓글들을 모두 조회한다.
 func (r *CommentRepo) GetAllByGameID(gameID uint) ([]Comment, error) {
 	var comments []Comment
 
@@ -62,6 +67,7 @@ func (r *CommentRepo) GetAllByGameID(gameID uint) ([]Comment, error) {
 	return comments, err
 }
 
+// UpdateVoteUp 좋아요를 기록한다.
 func (r *CommentRepo) UpdateVoteUp(id uint) (affected int64, err error) {
 	var comment Comment
 	comment.ID = id
@@ -75,6 +81,7 @@ func (r *CommentRepo) UpdateVoteUp(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateVoteDown 싫어요를 기록한다.
 func (r *CommentRepo) UpdateVoteDown(id uint) (affected int64, err error) {
 	var comment Comment
 	comment.ID = id

@@ -10,6 +10,7 @@ func NewGameRepo(db *gorm.DB) *GameRepo {
 	return &GameRepo{db: db}
 }
 
+// Create 게임을 생성한다.
 func (r *GameRepo) Create(avatarID uint, title, leftOption, rightOption, leftDesc, rightDesc string) (Game, error) {
 	game := Game{
 		AvatarID:    avatarID,
@@ -25,6 +26,7 @@ func (r *GameRepo) Create(avatarID uint, title, leftOption, rightOption, leftDes
 	return game, err
 }
 
+// Update 게임 정보를 수정한다.
 func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rightDesc string) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -56,6 +58,7 @@ func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rig
 	return
 }
 
+// Delete 게임을 삭제한다.
 func (r *GameRepo) Delete(id uint) (affected int64, err error) {
 	tx := r.db.Delete(&Game{}, id)
 	if err = tx.Error; err != nil {
@@ -66,6 +69,7 @@ func (r *GameRepo) Delete(id uint) (affected int64, err error) {
 	return
 }
 
+// GetByID 게임 정보를 조회한다.
 func (r *GameRepo) GetByID(id uint) (Game, error) {
 	var game Game
 
@@ -74,6 +78,7 @@ func (r *GameRepo) GetByID(id uint) (Game, error) {
 	return game, err
 }
 
+// UpdateView 조회를 기록한다.
 func (r *GameRepo) UpdateView(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -87,6 +92,7 @@ func (r *GameRepo) UpdateView(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateVoteUp 좋아요를 기록한다.
 func (r *GameRepo) UpdateVoteUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -100,6 +106,7 @@ func (r *GameRepo) UpdateVoteUp(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateVoteDown 싫어요를 기록한다.
 func (r *GameRepo) UpdateVoteDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -113,6 +120,7 @@ func (r *GameRepo) UpdateVoteDown(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateLeftCountUp 게임 참여(왼쪽)를 기록한다.
 func (r *GameRepo) UpdateLeftCountUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -126,6 +134,7 @@ func (r *GameRepo) UpdateLeftCountUp(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateLeftCountUp 게임 참여(왼쪽)를 취소한다.
 func (r *GameRepo) UpdateLeftCountDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -139,6 +148,7 @@ func (r *GameRepo) UpdateLeftCountDown(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateRightCountUp 게임 참여(오른쪽)을 기록한다.
 func (r *GameRepo) UpdateRightCountUp(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
@@ -152,6 +162,7 @@ func (r *GameRepo) UpdateRightCountUp(id uint) (affected int64, err error) {
 	return
 }
 
+// UpdateRightCountDown 게임 참여(오른쪽)을 취소한다.
 func (r *GameRepo) UpdateRightCountDown(id uint) (affected int64, err error) {
 	var game Game
 	game.ID = id
