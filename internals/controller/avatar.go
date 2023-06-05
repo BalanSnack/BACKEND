@@ -27,9 +27,9 @@ func NewAvatarController(avatarService *service.AvatarService) *AvatarController
 // @Failure 500 {object} util.HTTPError
 // @Router /avatar [get]
 func (c *AvatarController) GetByAvatarId(ctx *gin.Context) {
-	avatarId := ctx.GetUint64("avatarId")
+	avatarID := ctx.GetInt("avatarID")
 
-	avatar, err := c.avatarService.GetByAvatarId(avatarId)
+	avatar, err := c.avatarService.GetByAvatarId(avatarID)
 	if err != nil {
 		util.NewError(ctx, http.StatusInternalServerError, err)
 		return

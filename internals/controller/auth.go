@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	"github.com/BalanSnack/BACKEND/internals/entity/res"
+	"github.com/BalanSnack/BACKEND/internals/entity"
 	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/gin-gonic/gin"
@@ -48,7 +48,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 
 func (c *AuthController) Callback(ctx *gin.Context) {
 	var (
-		response res.TokenResponse
+		response entity.TokenResponse
 		err      error
 	)
 
@@ -104,21 +104,21 @@ func (c *AuthController) Refresh(ctx *gin.Context) {
 			return
 		}
 
-		avatarId := uint64(claims["avatarId"].(float64))
+		avatarID := int(claims["avatarID"].(float64))
 
-		expiration := util.JwtConfig.CheckRefreshTokenExpiration(avatarId, tokenString)
+		expiration := util.JwtConfig.CheckRefreshTokenExpiration(avatarID, tokenString)
 		if !expiration {
 			util.NewError(ctx, http.StatusNotAcceptable, errors.New("expired token"))
 			return
 		}
 
-		accessToken, refreshToken, err := util.JwtConfig.CreateTokens(avatarId)
+		accessToken, refreshToken, err := util.JwtConfig.CreateTokens(avatarID)
 		if err != nil {
 			util.NewError(ctx, http.StatusInternalServerError, errors.New("failed to create tokens"))
 			return
 		}
 
-		ctx.JSON(http.StatusOK, res.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
+		ctx.JSON(http.StatusOK, entity.TokenResponse{AccessToken: accessToken, RefreshToken: refreshToken})
 	} else {
 		util.NewError(ctx, http.StatusBadRequest, errors.New("failed to extract token string from header's authorization"))
 		return

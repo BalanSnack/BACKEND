@@ -1,13 +1,14 @@
 package controller
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/entity/req"
+	"github.com/BalanSnack/BACKEND/internals/entity"
 	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
 
+// GameController 게임 생성 및 조회
 type GameController struct {
 	gameService *service.GameService
 }
@@ -18,32 +19,17 @@ func NewGameController(gameService *service.GameService) *GameController {
 	}
 }
 
-func (c *GameController) GetAll(ctx *gin.Context) {
-	games := c.gameService.GetAll()
-
-	ctx.JSON(http.StatusOK, games)
-}
-
-func (c *GameController) GetByTagId(ctx *gin.Context) {
-	tagId, err := strconv.ParseUint(ctx.Param("tag-id"), 10, 64)
+func (c *GameController) Get(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	games := c.gameService.GetByTagId(tagId)
+	avatarID := ctx.GetInt("avatarID")
 
-	ctx.JSON(http.StatusOK, games)
-}
-
-func (c *GameController) GetByGameId(ctx *gin.Context) {
-	gameId, err := strconv.ParseUint(ctx.Param("game-id"), 10, 64)
-	if err != nil {
-		ctx.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-
-	game, err := c.gameService.GetByGameId(gameId)
+	// 첫 화면에서 API 호출 시 id == 0
+	game, err := c.gameService.Get(id, avatarID, ctx.Param("class"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -53,16 +39,16 @@ func (c *GameController) GetByGameId(ctx *gin.Context) {
 }
 
 func (c *GameController) Create(ctx *gin.Context) {
-	req := req.CreateGameRequest{}
+	req := entity.CreateGameRequest{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	avatarId := ctx.GetUint64("avatarId")
+	avatarID := ctx.GetInt("avatarID")
 
-	game, err := c.gameService.Create(avatarId, req)
+	game, err := c.gameService.Create(avatarID, req)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -72,34 +58,32 @@ func (c *GameController) Create(ctx *gin.Context) {
 }
 
 func (c *GameController) Update(ctx *gin.Context) {
-	req := req.UpdateGameRequest{}
+	req := entity.UpdateGameRequest{}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	avatarId := ctx.GetUint64("avatarId")
-
-	game, err := c.gameService.Update(avatarId, req)
+	game, err := c.gameService.Update(req)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err) // 에러 정의해서 반환 코드 분기 필요
+		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	game.AvatarID = ctx.GetInt("avatarID")
 
 	ctx.JSON(http.StatusOK, game)
 }
 
 func (c *GameController) Delete(ctx *gin.Context) {
-	gameId, err := strconv.ParseUint(ctx.Param("game-id"), 10, 64)
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	avatarId := ctx.GetUint64("avatarId")
-
-	err = c.gameService.Delete(avatarId, gameId)
+	err = c.gameService.Delete(id)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err) // 에러 정의해서 반환 코드 분기 필요
 		return
