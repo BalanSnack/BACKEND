@@ -1,177 +1,128 @@
 package mysql
 
-import "gorm.io/gorm"
+import (
+	"database/sql"
+	"fmt"
+	"github.com/BalanSnack/BACKEND/internals/repository"
+)
 
-type GameRepo struct {
-	db *gorm.DB
+type GameRepository struct {
+	db *sql.DB
 }
 
-func NewGameRepo(db *gorm.DB) *GameRepo {
-	return &GameRepo{db: db}
+func NewGameRepository(db *sql.DB) *GameRepository {
+	return &GameRepository{
+		db: db,
+	}
 }
 
-// Create 게임을 생성한다.
-func (r *GameRepo) Create(avatarID uint, title, leftOption, rightOption, leftDesc, rightDesc string) (Game, error) {
-	game := Game{
-		AvatarID:    avatarID,
-		Title:       title,
-		LeftOption:  leftOption,
-		RightOption: rightOption,
-		LeftDesc:    leftDesc,
-		RightDesc:   rightDesc,
+func (r *GameRepository) Create(g *repository.Game) error {
+	stmt, err := r.db.Prepare("INSERT INTO games(title, left_option, right_option, left_desc, right_desc, avatar_id) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare create statement: %v", err)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(g.Title, g.LeftOption, g.RightOption, g.LeftDesc, g.RightDesc, g.AvatarID)
+	if err != nil {
+		return fmt.Errorf("failed to execute create statement: %v", err)
 	}
 
-	err := r.db.Create(&game).Error
+	id, err := res.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("failed to get last insert ID: %v", err)
+	}
 
-	return game, err
+	g.ID = int(id)
+	return nil
 }
 
-// Update 게임 정보를 수정한다.
-func (r *GameRepo) Update(id uint, title, leftOption, rightOption, leftDesc, rightDesc string) (affected int64, err error) {
-	var game Game
-	game.ID = id
+func (r *GameRepository) Get(id int) (*repository.Game, error) {
+	stmt, err := r.db.Prepare("SELECT title, left_option, right_option, left_desc, right_desc, avatar_id FROM games WHERE id = ?")
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare get statement: %v", err)
+	}
+	defer stmt.Close()
 
-	list := make(map[string]interface{})
-
-	if title != "" {
-		list["title"] = title
-	}
-	if leftOption != "" {
-		list["left_option"] = leftOption
-	}
-	if rightOption != "" {
-		list["right_option"] = rightOption
-	}
-	if leftDesc != "" {
-		list["left_desc"] = leftDesc
-	}
-	if rightDesc != "" {
-		list["right_desc"] = rightDesc
+	var g repository.Game
+	err = stmt.QueryRow(id).Scan(&g.Title, &g.LeftOption, &g.RightOption, &g.LeftDesc, &g.RightDesc, &g.AvatarID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to execute read statement: %v", err)
 	}
 
-	tx := r.db.Model(&game).Updates(list)
-	if err = tx.Error; err != nil {
-		return
-	}
-	affected = tx.RowsAffected
-
-	return
+	g.ID = id
+	return &g, nil
 }
 
-// Delete 게임을 삭제한다.
-func (r *GameRepo) Delete(id uint) (affected int64, err error) {
-	tx := r.db.Delete(&Game{}, id)
-	if err = tx.Error; err != nil {
-		return
+func (r *GameRepository) Update(g *repository.Game) error {
+	stmt, err := r.db.Prepare("UPDATE games SET title = ?, left_option = ?, right_option = ?, left_desc = ?, right_desc = ? WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare update statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
+	_, err = stmt.Exec(g.Title, g.LeftOption, g.RightOption, g.LeftDesc, g.RightDesc, g.ID)
+	if err != nil {
+		return fmt.Errorf("failed to execute update statement: %v", err)
+	}
+
+	return nil
 }
 
-// GetByID 게임 정보를 조회한다.
-func (r *GameRepo) GetByID(id uint) (Game, error) {
-	var game Game
+func (r *GameRepository) Delete(id int) error {
+	stmt, err := r.db.Prepare("DELETE FROM games WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare delete statement: %v", err)
+	}
+	defer stmt.Close()
 
-	err := r.db.First(&game, id).Error
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("failed to execute delete statement: %v", err)
+	}
 
-	return game, err
+	return nil
 }
 
-// UpdateView 조회를 기록한다.
-func (r *GameRepo) UpdateView(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("view", gorm.Expr("view  + ?", 1))
-	if err = tx.Error; err != nil {
-		return
+// GetNextRandomGame 유저가 참여하지 않는 게임 중 랜덤 ID 조회, 중복 조회를 피하기 위해 현재 조회 중인 gameID 제외
+func (r *GameRepository) GetNextRandomGame(avatarID, gameID int) (int, error) {
+	stmt, err := r.db.Prepare("SELECT id FROM games WHERE id NOT IN (SELECT game_id FROM votes WHERE avatar_id = ?) AND id != ? ORDER BY RAND() LIMIT 1")
+	if err != nil {
+		return 0, fmt.Errorf("failed to prepare get statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
+	var id int
+	err = stmt.QueryRow(avatarID, gameID).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("failed to execute read statement: %v", err)
+	}
+
+	return id, nil
 }
 
-// UpdateVoteUp 좋아요를 기록한다.
-func (r *GameRepo) UpdateVoteUp(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("vote", gorm.Expr("vote  + ?", 1))
-	if err = tx.Error; err != nil {
-		return
+// GetNextRecentGame 유저가 참여하지 않은 최신 게임 ID 조회, 중복 조회를 피하기 위해 현재 조회 중인 gameID 제외
+func (r *GameRepository) GetNextRecentGame(avatarID, gameID int) (int, error) {
+	stmt, err := r.db.Prepare("SELECT id FROM games WHERE id NOT IN (SELECT game_id FROM votes WHERE avatar_id = ?) AND id != ? ORDER BY id DESC LIMIT 1")
+	if err != nil {
+		return 0, fmt.Errorf("failed to prepare get statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
-}
-
-// UpdateVoteDown 싫어요를 기록한다.
-func (r *GameRepo) UpdateVoteDown(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("vote", gorm.Expr("vote  - ?", 1))
-	if err = tx.Error; err != nil {
-		return
+	var id int
+	err = stmt.QueryRow(avatarID, gameID).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, fmt.Errorf("failed to execute read statement: %v", err)
 	}
-	affected = tx.RowsAffected
 
-	return
-}
-
-// UpdateLeftCountUp 게임 참여(왼쪽)를 기록한다.
-func (r *GameRepo) UpdateLeftCountUp(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("left_count", gorm.Expr("left_count  + ?", 1))
-	if err = tx.Error; err != nil {
-		return
-	}
-	affected = tx.RowsAffected
-
-	return
-}
-
-// UpdateLeftCountUp 게임 참여(왼쪽)를 취소한다.
-func (r *GameRepo) UpdateLeftCountDown(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("left_count", gorm.Expr("left_count  - ?", 1))
-	if err = tx.Error; err != nil {
-		return
-	}
-	affected = tx.RowsAffected
-
-	return
-}
-
-// UpdateRightCountUp 게임 참여(오른쪽)을 기록한다.
-func (r *GameRepo) UpdateRightCountUp(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("right_count", gorm.Expr("right_count  + ?", 1))
-	if err = tx.Error; err != nil {
-		return
-	}
-	affected = tx.RowsAffected
-
-	return
-}
-
-// UpdateRightCountDown 게임 참여(오른쪽)을 취소한다.
-func (r *GameRepo) UpdateRightCountDown(id uint) (affected int64, err error) {
-	var game Game
-	game.ID = id
-
-	tx := r.db.Model(&game).UpdateColumn("right_count", gorm.Expr("right_count  - ?", 1))
-	if err = tx.Error; err != nil {
-		return
-	}
-	affected = tx.RowsAffected
-
-	return
+	return id, nil
 }

@@ -1,4 +1,4 @@
-package mysql
+package gorm
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// pulls an image, creates a container based on it and runs it
-	resource, err := pool.Run("mysql", "5.7", []string{"MYSQL_ROOT_PASSWORD=secret", "MYSQL_DATABASE=test"})
+	resource, err := pool.Run("gorm", "5.7", []string{"MYSQL_ROOT_PASSWORD=secret", "MYSQL_DATABASE=test"})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}

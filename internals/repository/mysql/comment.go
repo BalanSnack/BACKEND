@@ -1,96 +1,98 @@
 package mysql
 
-import "gorm.io/gorm"
+import (
+	"database/sql"
+	"fmt"
+	"github.com/BalanSnack/BACKEND/internals/repository"
+)
 
-type CommentRepo struct {
-	db *gorm.DB
+type CommentRepository struct {
+	db *sql.DB
 }
 
-func NewCommentRepo(db *gorm.DB) *CommentRepo {
-	return &CommentRepo{db: db}
+func NewCommentRepository(db *sql.DB) *CommentRepository {
+	return &CommentRepository{
+		db: db,
+	}
 }
 
-// Create 댓글을 생성한다.
-func (r *CommentRepo) Create(avatarID uint, parentID uint, gameID uint, content string) (Comment, error) {
-	comment := Comment{
-		AvatarID: avatarID,
-		ParentID: parentID,
-		GameID:   gameID,
-		Content:  content,
+func (r *CommentRepository) Create(c *repository.Comment) error {
+	stmt, err := r.db.Prepare("INSERT INTO comments(parent_id, game_id, avatar_id, content, deleted) VALUES (?, ?, ?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare create statement: %c", err)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(c.ParentID, c.GameID, c.AvatarID, c.Content, c.Deleted)
+	if err != nil {
+		return fmt.Errorf("failed to execute create statement: %c", err)
 	}
 
-	err := r.db.Create(&comment).Error
-
-	return comment, err
-}
-
-// Update 댓글 내용을 수정한다.
-func (r *CommentRepo) Update(id uint, content string) (affected int64, err error) {
-	var comment Comment
-	comment.ID = id
-
-	tx := r.db.Model(&comment).Update("content", content)
-	if err = tx.Error; err != nil {
-		return
+	id, err := res.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("failed to get last insert ID: %c", err)
 	}
-	affected = tx.RowsAffected
 
-	return
+	c.ID = int(id)
+	return nil
 }
 
-// Delete 댓글을 삭제한다.
-func (r *CommentRepo) Delete(id uint) (affected int64, err error) {
-	tx := r.db.Delete(&Comment{}, id)
-	if err = tx.Error; err != nil {
-		return
+// Delete 완전 삭제 X, 삭제 기록
+func (r *CommentRepository) Delete(id int) error {
+	stmt, err := r.db.Prepare("UPDATE comments SET deleted = 1 WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare update statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
-}
-
-// GetByID 댓글 정보를 조회한다.
-func (r *CommentRepo) GetByID(id uint) (Comment, error) {
-	var comment Comment
-
-	err := r.db.First(&comment, id).Error
-
-	return comment, err
-}
-
-// GetAllByGameID 게임에 등록된 댓글들을 모두 조회한다.
-func (r *CommentRepo) GetAllByGameID(gameID uint) ([]Comment, error) {
-	var comments []Comment
-
-	err := r.db.Where("game_id = ?", gameID).Find(&comments).Error
-
-	return comments, err
-}
-
-// UpdateVoteUp 좋아요를 기록한다.
-func (r *CommentRepo) UpdateVoteUp(id uint) (affected int64, err error) {
-	var comment Comment
-	comment.ID = id
-
-	tx := r.db.Model(&comment).UpdateColumn("vote", gorm.Expr("vote + ?", 1))
-	if err = tx.Error; err != nil {
-		return
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("failed to execute update statement: %v", err)
 	}
-	affected = tx.RowsAffected
 
-	return
+	return nil
 }
 
-// UpdateVoteDown 싫어요를 기록한다.
-func (r *CommentRepo) UpdateVoteDown(id uint) (affected int64, err error) {
-	var comment Comment
-	comment.ID = id
-
-	tx := r.db.Model(&comment).UpdateColumn("vote", gorm.Expr("vote - ?", 1))
-	if err = tx.Error; err != nil {
-		return
+func (r *CommentRepository) Update(id int, content string) error {
+	stmt, err := r.db.Prepare("UPDATE comments SET content = ? WHERE id = ?")
+	if err != nil {
+		fmt.Errorf("failed to prepare get statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
+	_, err = stmt.Exec(content, id)
+	if err != nil {
+		return fmt.Errorf("failed to execute update statement: %v", err)
+	}
+
+	return nil
+}
+
+// GetByGameID 특정 게임의 댓글 리스트 조회
+func (r *CommentRepository) GetByGameID(gameID int) ([]*repository.Comment, error) {
+	stmt, err := r.db.Prepare("SELECT id, parent_id, avatar_id, content, deleted FROM comments WHERE game_id = ? ORDER BY id")
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare get statement: %v", err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(gameID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to execute read statement: %v", err)
+	}
+
+	var comments []*repository.Comment
+	for rows.Next() {
+		comment := repository.Comment{}
+		err = rows.Scan(&comment.ID, &comment.ParentID, &comment.AvatarID, &comment.Content, &comment.Deleted)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse values: %v", err)
+		}
+		comments = append(comments, &comment)
+	}
+
+	return comments, nil
 }

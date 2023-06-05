@@ -1,68 +1,89 @@
 package mysql
 
-import "gorm.io/gorm"
+import (
+	"database/sql"
+	"fmt"
+	"github.com/BalanSnack/BACKEND/internals/repository"
+	//_ "github.com/go-sql-driver/mysql"
+)
 
-type AvatarRepo struct {
-	db *gorm.DB
+type AvatarRepository struct {
+	db *sql.DB
 }
 
-func NewAvatarRepo(db *gorm.DB) *AvatarRepo {
-	return &AvatarRepo{db: db}
-}
-
-// Create 아바타를 생성한다.
-func (r *AvatarRepo) Create(nick string, profile string) (Avatar, error) {
-	avatar := Avatar{Nick: nick, Profile: profile}
-
-	err := r.db.Create(&avatar).Error
-
-	return avatar, err
-}
-
-// UpdateNick 아바타의 닉네임을 수정한다.
-func (r *AvatarRepo) UpdateNick(id uint, nick string) (affected int64, err error) {
-	var avatar Avatar
-	avatar.ID = id
-
-	tx := r.db.Model(&avatar).Update("nick", nick)
-	if err = tx.Error; err != nil {
-		return
+func NewAvatarRepository(db *sql.DB) *AvatarRepository {
+	return &AvatarRepository{
+		db: db,
 	}
-	affected = tx.RowsAffected
-
-	return
 }
 
-// UpdateProfile 아바타의 프로필 사진을 수정한다.
-func (r *AvatarRepo) UpdateProfile(id uint, profile string) (affected int64, err error) {
-	var avatar Avatar
-	avatar.ID = id
-
-	tx := r.db.Model(&avatar).Update("profile", profile)
-	if err = tx.Error; err != nil {
-		return
+func (r *AvatarRepository) Create(a *repository.Avatar) error {
+	stmt, err := r.db.Prepare("INSERT INTO avatars(nick, profile) VALUES (?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare create statement: %v", err)
 	}
-	affected = tx.RowsAffected
+	defer stmt.Close()
 
-	return
-}
-
-// Delete 아바타를 삭제한다.
-func (r *AvatarRepo) Delete(id uint) (affected int64, err error) {
-	tx := r.db.Delete(&Avatar{}, id)
-	if err = tx.Error; err != nil {
-		return
+	res, err := stmt.Exec(a.Nick, a.Profile)
+	if err != nil {
+		return fmt.Errorf("failed to execute create statement: %v", err)
 	}
-	affected = tx.RowsAffected
 
-	return
+	id, err := res.LastInsertId()
+	if err != nil {
+		return fmt.Errorf("failed to get last insert ID: %v", err)
+	}
+
+	a.ID = int(id)
+	return nil
 }
 
-// GetByID 아바타 정보를 조회한다.
-func (r *AvatarRepo) GetByID(id uint) (Avatar, error) {
-	var avatar Avatar
+func (r *AvatarRepository) Get(id int) (*repository.Avatar, error) {
+	stmt, err := r.db.Prepare("SELECT nick, profile FROM avatars WHERE id = ?")
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare read statement: %v", err)
+	}
+	defer stmt.Close()
 
-	err := r.db.First(&avatar, id).Error
+	var a repository.Avatar
+	err = stmt.QueryRow(id).Scan(&a.Nick, &a.Profile)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to execute read statement: %v", err)
+	}
 
-	return avatar, err
+	a.ID = id
+	return &a, nil
+}
+
+func (r *AvatarRepository) Update(a *repository.Avatar) error {
+	stmt, err := r.db.Prepare("UPDATE avatars SET nick = ?, profile = ? WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare update statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(a.Nick, a.Profile, a.ID)
+	if err != nil {
+		return fmt.Errorf("failed to execute update statement: %v", err)
+	}
+
+	return nil
+}
+
+func (r *AvatarRepository) Delete(id int) error {
+	stmt, err := r.db.Prepare("DELETE FROM avatars WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare delete statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("failed to execute delete statement: %v", err)
+	}
+
+	return nil
 }
