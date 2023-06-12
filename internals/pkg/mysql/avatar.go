@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/pkg"
 	//_ "github.com/go-sql-driver/mysql"
 )
 
@@ -17,7 +17,7 @@ func NewAvatarRepository(db *sql.DB) *AvatarRepository {
 	}
 }
 
-func (r *AvatarRepository) Create(a *repository.Avatar) error {
+func (r *AvatarRepository) Create(a *pkg.Avatar) error {
 	stmt, err := r.db.Prepare("INSERT INTO avatars(nick, profile) VALUES (?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare create statement: %v", err)
@@ -38,14 +38,14 @@ func (r *AvatarRepository) Create(a *repository.Avatar) error {
 	return nil
 }
 
-func (r *AvatarRepository) Get(id int) (*repository.Avatar, error) {
+func (r *AvatarRepository) Get(id int) (*pkg.Avatar, error) {
 	stmt, err := r.db.Prepare("SELECT nick, profile FROM avatars WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare read statement: %v", err)
 	}
 	defer stmt.Close()
 
-	var a repository.Avatar
+	var a pkg.Avatar
 	err = stmt.QueryRow(id).Scan(&a.Nick, &a.Profile)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -58,7 +58,7 @@ func (r *AvatarRepository) Get(id int) (*repository.Avatar, error) {
 	return &a, nil
 }
 
-func (r *AvatarRepository) Update(a *repository.Avatar) error {
+func (r *AvatarRepository) Update(a *pkg.Avatar) error {
 	stmt, err := r.db.Prepare("UPDATE avatars SET nick = ?, profile = ? WHERE id = ?")
 	if err != nil {
 		return fmt.Errorf("failed to prepare update statement: %v", err)

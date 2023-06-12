@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -20,7 +19,7 @@ func NewVoteController(voteRepository *mysql.VoteRepository) *VoteController {
 }
 
 func (c *VoteController) Create(ctx *gin.Context) {
-	vote := repository.Vote{}
+	vote := pkg.Vote{}
 	err := ctx.ShouldBindJSON(&vote)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)

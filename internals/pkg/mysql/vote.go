@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/pkg"
 )
 
 type VoteRepository struct {
@@ -16,7 +16,7 @@ func NewVoteRepository(db *sql.DB) *VoteRepository {
 	}
 }
 
-func (r *VoteRepository) Create(v *repository.Vote) error {
+func (r *VoteRepository) Create(v *pkg.Vote) error {
 	stmt, err := r.db.Prepare("INSERT INTO votes(game_id, avatar_id, pick) VALUES (?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare create statement: %v", err)
@@ -53,7 +53,7 @@ func (r *VoteRepository) Delete(id int) error {
 }
 
 // GetByGameID 특정 게임의 참여 리스트 조회
-func (r *VoteRepository) GetByGameID(gameID int) (map[int]*repository.Vote, error) {
+func (r *VoteRepository) GetByGameID(gameID int) (map[int]*pkg.Vote, error) {
 	stmt, err := r.db.Prepare("SELECT id, game_id, avatar_id, pick FROM votes WHERE game_id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare get statement: %v", err)
@@ -68,9 +68,9 @@ func (r *VoteRepository) GetByGameID(gameID int) (map[int]*repository.Vote, erro
 		return nil, fmt.Errorf("failed to execute read statement: %v", err)
 	}
 
-	votes := make(map[int]*repository.Vote)
+	votes := make(map[int]*pkg.Vote)
 	for rows.Next() {
-		vote := repository.Vote{}
+		vote := pkg.Vote{}
 		err = rows.Scan(&vote.ID, &vote.GameID, &vote.AvatarID, &vote.Pick)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse values: %v", err)
