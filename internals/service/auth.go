@@ -3,21 +3,22 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"github.com/BalanSnack/BACKEND/internals/entity/res"
+	"github.com/BalanSnack/BACKEND/internals/entity"
 	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"io"
 	"log"
 )
 
 type AuthService struct {
-	userRepository   repository.UserRepository
-	avatarRepository repository.AvatarRepository
+	memberRepository *mysql.MemberRepository
+	avatarRepository *mysql.AvatarRepository
 }
 
-func NewAuthService(userRepository repository.UserRepository, avatarRepository repository.AvatarRepository) *AuthService {
+func NewAuthService(memberRepository *mysql.MemberRepository, avatarRepository *mysql.AvatarRepository) *AuthService {
 	return &AuthService{
-		userRepository:   userRepository,
+		memberRepository: memberRepository,
 		avatarRepository: avatarRepository,
 	}
 }
@@ -26,18 +27,18 @@ func (s *AuthService) GetKakaoLoginPageUrl(state string) string {
 	return util.KakaoOAuthConfig.AuthCodeURL(state)
 }
 
-func (s *AuthService) GetKakaoLoginResponse(code string) (res.TokenResponse, error) {
+func (s *AuthService) GetKakaoLoginResponse(code string) (entity.TokenResponse, error) {
 	token, err := util.KakaoOAuthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	client := util.KakaoOAuthConfig.Client(context.Background(), token)
 	response, err := client.Get("https://kapi.kakao.com/v2/user/me")
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 	defer func() {
 		err = response.Body.Close()
@@ -49,27 +50,48 @@ func (s *AuthService) GetKakaoLoginResponse(code string) (res.TokenResponse, err
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	var userInfo util.KakaoUser
 	if err = json.Unmarshal(data, &userInfo); err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
-	user, err := s.userRepository.GetByEmailAndProvider(userInfo.KakaoAccount.Email, "kakao")
+	member, err := s.memberRepository.GetByEmailAndProvider(userInfo.KakaoAccount.Email, "kakao")
 	if err != nil {
-		avatar := s.avatarRepository.Create(userInfo.KakaoAccount.Profile.Nickname, userInfo.KakaoAccount.Profile.ProfileImageURL, false)
-		user = s.userRepository.Create(avatar.AvatarId, userInfo.KakaoAccount.Email, "kakao")
+		log.Println(err)
+		return entity.TokenResponse{}, err
+	}
+	if member == nil {
+		avatar := &repository.Avatar{
+			Nick:    userInfo.KakaoAccount.Profile.Nickname,
+			Profile: userInfo.KakaoAccount.Profile.ProfileImageURL,
+		}
+		err = s.avatarRepository.Create(avatar)
+		if err != nil {
+			log.Println(err)
+			return entity.TokenResponse{}, err
+		}
+		member = &repository.Member{
+			Email:    userInfo.KakaoAccount.Email,
+			Provider: "kakao",
+			AvatarID: avatar.ID,
+		}
+		err = s.memberRepository.Create(member)
+		if err != nil {
+			log.Println(err)
+			return entity.TokenResponse{}, err
+		}
 	}
 
-	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(user.AvatarId)
+	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(member.AvatarID)
 	if err != nil {
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
-	return res.TokenResponse{
+	return entity.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
@@ -79,18 +101,18 @@ func (s *AuthService) GetGoogleLoginPageUrl(state string) string {
 	return util.GoogleOAuthConfig.AuthCodeURL(state)
 }
 
-func (s *AuthService) GetGoogleLoginResponse(code string) (res.TokenResponse, error) {
+func (s *AuthService) GetGoogleLoginResponse(code string) (entity.TokenResponse, error) {
 	token, err := util.GoogleOAuthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	client := util.GoogleOAuthConfig.Client(context.Background(), token)
 	response, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo") // 개선 필요
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 	defer func() {
 		err = response.Body.Close()
@@ -102,27 +124,49 @@ func (s *AuthService) GetGoogleLoginResponse(code string) (res.TokenResponse, er
 	data, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
 	var userInfo util.GoogleUserInfo
 	if err = json.Unmarshal(data, &userInfo); err != nil {
 		log.Println(err)
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
-	user, err := s.userRepository.GetByEmailAndProvider(userInfo.Email, "google")
+	member, err := s.memberRepository.GetByEmailAndProvider(userInfo.Email, "google")
 	if err != nil {
-		avatar := s.avatarRepository.Create(userInfo.Name, userInfo.Picture, false)
-		user = s.userRepository.Create(avatar.AvatarId, userInfo.Email, "google")
+		log.Println(err)
+		return entity.TokenResponse{}, err
+	}
+	if member == nil {
+		avatar := &repository.Avatar{
+			Nick:    userInfo.Name,
+			Profile: userInfo.Picture,
+		}
+		err = s.avatarRepository.Create(avatar)
+		if err != nil {
+			log.Println(err)
+			return entity.TokenResponse{}, err
+		}
+		member = &repository.Member{
+			Email:    userInfo.Email,
+			Provider: "google",
+			AvatarID: avatar.ID,
+		}
+		err = s.memberRepository.Create(member)
+		if err != nil {
+			log.Println(err)
+			return entity.TokenResponse{}, err
+		}
 	}
 
-	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(user.AvatarId)
+	log.Println(member.AvatarID)
+	accessToken, refreshToken, err := util.JwtConfig.CreateTokens(member.AvatarID)
 	if err != nil {
-		return res.TokenResponse{}, err
+		return entity.TokenResponse{}, err
 	}
 
-	return res.TokenResponse{
+	return entity.TokenResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil

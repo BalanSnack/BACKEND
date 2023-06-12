@@ -16,7 +16,7 @@ type jwtConfig struct {
 	RefreshTokenExpiryHour int
 	accessTokenSecret      string
 	refreshTokenSecret     string
-	refreshTokenMap        map[uint64]map[string]bool
+	refreshTokenMap        map[int]map[string]bool
 }
 
 func init() {
@@ -28,12 +28,12 @@ func SetJwtUtilConfig(accessTokenExpiryHour, refreshTokenExpiryHour int, accessT
 	JwtConfig.RefreshTokenExpiryHour = refreshTokenExpiryHour
 	JwtConfig.accessTokenSecret = accessTokenSecret
 	JwtConfig.refreshTokenSecret = refreshTokenSecret
-	JwtConfig.refreshTokenMap = make(map[uint64]map[string]bool)
+	JwtConfig.refreshTokenMap = make(map[int]map[string]bool)
 }
 
-func (ju *jwtConfig) CreateAccessToken(avatarId uint64, exp int64) (string, error) {
+func (ju *jwtConfig) CreateAccessToken(avatarID int, exp int64) (string, error) {
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"avatarId": avatarId,
+		"avatarID": avatarID,
 		"exp":      exp,
 	}).SignedString([]byte(ju.accessTokenSecret))
 	if err != nil {
@@ -43,9 +43,9 @@ func (ju *jwtConfig) CreateAccessToken(avatarId uint64, exp int64) (string, erro
 	return accessToken, nil
 }
 
-func (ju *jwtConfig) CreateRefreshToken(avatarId uint64, exp int64) (string, error) {
+func (ju *jwtConfig) CreateRefreshToken(avatarID int, exp int64) (string, error) {
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"avatarId": avatarId,
+		"avatarID": avatarID,
 		"exp":      exp,
 	}).SignedString([]byte(ju.refreshTokenSecret))
 	if err != nil {
@@ -53,10 +53,10 @@ func (ju *jwtConfig) CreateRefreshToken(avatarId uint64, exp int64) (string, err
 	}
 
 	// 인-메모리 맵(히스토리) 불러오기
-	m, ok := ju.refreshTokenMap[avatarId]
+	m, ok := ju.refreshTokenMap[avatarID]
 	if !ok {
-		ju.refreshTokenMap[avatarId] = make(map[string]bool)
-		m = ju.refreshTokenMap[avatarId]
+		ju.refreshTokenMap[avatarID] = make(map[string]bool)
+		m = ju.refreshTokenMap[avatarID]
 	}
 
 	// 기존 리프레시 토큰들 폐기
@@ -65,7 +65,7 @@ func (ju *jwtConfig) CreateRefreshToken(avatarId uint64, exp int64) (string, err
 	}
 
 	// 새로 발급할 리프레시 토큰 히스토리에 기록
-	ju.refreshTokenMap[avatarId][refreshToken] = true
+	ju.refreshTokenMap[avatarID][refreshToken] = true
 
 	return refreshToken, nil
 }
@@ -101,17 +101,17 @@ func (ju *jwtConfig) ParseAndValidateRefreshToken(tokenString string) (jwt.MapCl
 	}
 }
 
-func (ju *jwtConfig) CheckRefreshTokenExpiration(avatarId uint64, tokenString string) bool {
-	return ju.refreshTokenMap[avatarId][tokenString]
+func (ju *jwtConfig) CheckRefreshTokenExpiration(avatarID int, tokenString string) bool {
+	return ju.refreshTokenMap[avatarID][tokenString]
 }
 
-func (ju *jwtConfig) CreateTokens(avatarId uint64) (string, string, error) {
-	accessToken, err := ju.CreateAccessToken(avatarId, time.Now().Add(time.Hour*time.Duration(ju.AccessTokenExpiryHour)).Unix())
+func (ju *jwtConfig) CreateTokens(avatarID int) (string, string, error) {
+	accessToken, err := ju.CreateAccessToken(avatarID, time.Now().Add(time.Hour*time.Duration(ju.AccessTokenExpiryHour)).Unix())
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := ju.CreateRefreshToken(avatarId, time.Now().Add(time.Hour*time.Duration(ju.RefreshTokenExpiryHour)).Unix())
+	refreshToken, err := ju.CreateRefreshToken(avatarID, time.Now().Add(time.Hour*time.Duration(ju.RefreshTokenExpiryHour)).Unix())
 	if err != nil {
 		return "", "", err
 	}

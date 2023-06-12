@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"errors"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/gin-gonic/gin"
-	"log"
+	"net/http"
 	"strings"
 )
 
@@ -11,7 +12,8 @@ func CheckAccessToken() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := ctx.Request.Header.Get("Authorization")
 		if auth == "" {
-			ctx.Abort()
+			ctx.AbortWithError(http.StatusUnauthorized, errors.New("information required for authentication is missing; Authorization header"))
+			return
 		}
 
 		tmp := strings.Split(auth, "Bearer ")
@@ -19,13 +21,14 @@ func CheckAccessToken() gin.HandlerFunc {
 			tokenString := tmp[1]
 			claims, err := util.JwtConfig.ParseAndValidateAccessToken(tokenString)
 			if err != nil {
-				log.Println(err)
-				ctx.Abort()
+				ctx.AbortWithError(http.StatusUnauthorized, err)
+				return
 			}
-			ctx.Set("avatarId", uint64(claims["avatarId"].(float64)))
+			ctx.Set("avatarID", int(claims["avatarID"].(float64)))
 			ctx.Next()
 		} else {
-			ctx.Abort()
+			ctx.AbortWithError(http.StatusUnauthorized, errors.New("invalid value of Authorization header"))
+			return
 		}
 	}
 }
