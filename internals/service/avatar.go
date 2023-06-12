@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"log"
 )
@@ -16,7 +15,7 @@ func NewAvatarService(avatarRepository *mysql.AvatarRepository) *AvatarService {
 	}
 }
 
-func (s *AvatarService) GetByAvatarId(avatarID int) (*repository.Avatar, error) {
+func (s *AvatarService) GetByAvatarId(avatarID int) (*pkg.Avatar, error) {
 	avatar, err := s.avatarRepository.Get(avatarID)
 	if err != nil {
 		log.Println(err)

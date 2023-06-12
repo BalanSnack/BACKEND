@@ -3,7 +3,6 @@ package service
 import (
 	"fmt"
 	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"log"
 )
@@ -24,8 +23,8 @@ func NewGameService(gameRepository *mysql.GameRepository, likeRepository *mysql.
 	}
 }
 
-func (s *GameService) Create(avatarID int, req entity.CreateGameRequest) (*repository.Game, error) {
-	game := repository.Game{
+func (s *GameService) Create(avatarID int, req entity.CreateGameRequest) (*pkg.Game, error) {
+	game := pkg.Game{
 		LeftOption:  req.LeftOption,
 		RightOption: req.RightOption,
 		LeftDesc:    req.LeftDesc,
@@ -41,8 +40,8 @@ func (s *GameService) Create(avatarID int, req entity.CreateGameRequest) (*repos
 	return &game, err
 }
 
-func (s *GameService) Update(req entity.UpdateGameRequest) (*repository.Game, error) {
-	game := repository.Game{
+func (s *GameService) Update(req entity.UpdateGameRequest) (*pkg.Game, error) {
+	game := pkg.Game{
 		ID:          req.ID,
 		LeftOption:  req.LeftOption,
 		RightOption: req.RightOption,

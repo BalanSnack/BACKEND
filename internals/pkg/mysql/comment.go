@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/pkg"
 )
 
 type CommentRepository struct {
@@ -16,7 +16,7 @@ func NewCommentRepository(db *sql.DB) *CommentRepository {
 	}
 }
 
-func (r *CommentRepository) Create(c *repository.Comment) error {
+func (r *CommentRepository) Create(c *pkg.Comment) error {
 	stmt, err := r.db.Prepare("INSERT INTO comments(parent_id, game_id, avatar_id, content, deleted) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare create statement: %c", err)
@@ -69,7 +69,7 @@ func (r *CommentRepository) Update(id int, content string) error {
 }
 
 // GetByGameID 특정 게임의 댓글 리스트 조회
-func (r *CommentRepository) GetByGameID(gameID int) ([]*repository.Comment, error) {
+func (r *CommentRepository) GetByGameID(gameID int) ([]*pkg.Comment, error) {
 	stmt, err := r.db.Prepare("SELECT id, parent_id, avatar_id, content, deleted FROM comments WHERE game_id = ? ORDER BY id")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare get statement: %v", err)
@@ -84,9 +84,9 @@ func (r *CommentRepository) GetByGameID(gameID int) ([]*repository.Comment, erro
 		return nil, fmt.Errorf("failed to execute read statement: %v", err)
 	}
 
-	var comments []*repository.Comment
+	var comments []*pkg.Comment
 	for rows.Next() {
-		comment := repository.Comment{}
+		comment := pkg.Comment{}
 		err = rows.Scan(&comment.ID, &comment.ParentID, &comment.AvatarID, &comment.Content, &comment.Deleted)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse values: %v", err)

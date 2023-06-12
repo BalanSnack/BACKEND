@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -21,7 +20,7 @@ func NewLikeController(likeRepository *mysql.LikeRepository) *LikeController {
 }
 
 func (c *LikeController) Create(ctx *gin.Context) {
-	like := repository.Like{}
+	like := pkg.Like{}
 	err := ctx.ShouldBindJSON(&like)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)

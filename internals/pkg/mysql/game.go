@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository"
+	"github.com/BalanSnack/BACKEND/internals/pkg"
 )
 
 type GameRepository struct {
@@ -16,7 +16,7 @@ func NewGameRepository(db *sql.DB) *GameRepository {
 	}
 }
 
-func (r *GameRepository) Create(g *repository.Game) error {
+func (r *GameRepository) Create(g *pkg.Game) error {
 	stmt, err := r.db.Prepare("INSERT INTO games(title, left_option, right_option, left_desc, right_desc, avatar_id) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return fmt.Errorf("failed to prepare create statement: %v", err)
@@ -37,14 +37,14 @@ func (r *GameRepository) Create(g *repository.Game) error {
 	return nil
 }
 
-func (r *GameRepository) Get(id int) (*repository.Game, error) {
+func (r *GameRepository) Get(id int) (*pkg.Game, error) {
 	stmt, err := r.db.Prepare("SELECT title, left_option, right_option, left_desc, right_desc, avatar_id FROM games WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare get statement: %v", err)
 	}
 	defer stmt.Close()
 
-	var g repository.Game
+	var g pkg.Game
 	err = stmt.QueryRow(id).Scan(&g.Title, &g.LeftOption, &g.RightOption, &g.LeftDesc, &g.RightDesc, &g.AvatarID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -57,7 +57,7 @@ func (r *GameRepository) Get(id int) (*repository.Game, error) {
 	return &g, nil
 }
 
-func (r *GameRepository) Update(g *repository.Game) error {
+func (r *GameRepository) Update(g *pkg.Game) error {
 	stmt, err := r.db.Prepare("UPDATE games SET title = ?, left_option = ?, right_option = ?, left_desc = ?, right_desc = ? WHERE id = ?")
 	if err != nil {
 		return fmt.Errorf("failed to prepare update statement: %v", err)

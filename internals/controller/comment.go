@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -20,7 +19,7 @@ func NewCommentController(commentRepository *mysql.CommentRepository) *CommentCo
 }
 
 func (c *CommentController) Create(ctx *gin.Context) {
-	comment := repository.Comment{}
+	comment := pkg.Comment{}
 	err := ctx.ShouldBindJSON(&comment)
 	if err != nil {
 		ctx.AbortWithError(http.StatusBadRequest, err)

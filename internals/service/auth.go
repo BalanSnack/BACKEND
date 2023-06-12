@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/repository"
 	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/BalanSnack/BACKEND/internals/util"
 	"io"
@@ -65,7 +64,7 @@ func (s *AuthService) GetKakaoLoginResponse(code string) (entity.TokenResponse, 
 		return entity.TokenResponse{}, err
 	}
 	if member == nil {
-		avatar := &repository.Avatar{
+		avatar := &pkg.Avatar{
 			Nick:    userInfo.KakaoAccount.Profile.Nickname,
 			Profile: userInfo.KakaoAccount.Profile.ProfileImageURL,
 		}
@@ -74,7 +73,7 @@ func (s *AuthService) GetKakaoLoginResponse(code string) (entity.TokenResponse, 
 			log.Println(err)
 			return entity.TokenResponse{}, err
 		}
-		member = &repository.Member{
+		member = &pkg.Member{
 			Email:    userInfo.KakaoAccount.Email,
 			Provider: "kakao",
 			AvatarID: avatar.ID,
@@ -139,7 +138,7 @@ func (s *AuthService) GetGoogleLoginResponse(code string) (entity.TokenResponse,
 		return entity.TokenResponse{}, err
 	}
 	if member == nil {
-		avatar := &repository.Avatar{
+		avatar := &pkg.Avatar{
 			Nick:    userInfo.Name,
 			Profile: userInfo.Picture,
 		}
@@ -148,7 +147,7 @@ func (s *AuthService) GetGoogleLoginResponse(code string) (entity.TokenResponse,
 			log.Println(err)
 			return entity.TokenResponse{}, err
 		}
-		member = &repository.Member{
+		member = &pkg.Member{
 			Email:    userInfo.Email,
 			Provider: "google",
 			AvatarID: avatar.ID,
