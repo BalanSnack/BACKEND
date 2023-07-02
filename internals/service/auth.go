@@ -1,11 +1,12 @@
 package service
 
 import (
+	"BACKEND/internals/entity"
+	"BACKEND/internals/pkg"
+	"BACKEND/internals/pkg/mysql"
+	"BACKEND/internals/util"
 	"context"
 	"encoding/json"
-	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
-	"github.com/BalanSnack/BACKEND/internals/util"
 	"io"
 	"log"
 )

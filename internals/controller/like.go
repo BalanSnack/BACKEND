@@ -1,8 +1,9 @@
 package controller
 
 import (
+	"BACKEND/internals/pkg"
+	"BACKEND/internals/pkg/mysql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

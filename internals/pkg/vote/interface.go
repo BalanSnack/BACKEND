@@ -1,8 +1,8 @@
 package vote
 
 import (
+	"BACKEND/internals/pkg/agg"
 	"context"
-	"github.com/BalanSnack/BACKEND/internals/pkg/agg"
 )
 
 type Repository interface {

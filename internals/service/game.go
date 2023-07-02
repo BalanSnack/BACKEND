@@ -1,9 +1,10 @@
 package service
 
 import (
+	"BACKEND/internals/entity"
+	"BACKEND/internals/pkg"
+	"BACKEND/internals/pkg/mysql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
 	"log"
 )
 

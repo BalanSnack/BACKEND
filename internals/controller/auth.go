@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"BACKEND/internals/entity"
+	"BACKEND/internals/service"
+	"BACKEND/internals/util"
 	"errors"
-	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/service"
-	"github.com/BalanSnack/BACKEND/internals/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"

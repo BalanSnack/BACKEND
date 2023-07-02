@@ -4,7 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 
-	"github.com/BalanSnack/BACKEND/internals/pkg/agg"
+	"BACKEND/internals/pkg/agg"
 )
 
 var _ Repository = (*repository)(nil)

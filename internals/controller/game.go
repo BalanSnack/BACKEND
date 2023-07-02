@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/entity"
-	"github.com/BalanSnack/BACKEND/internals/service"
+	"BACKEND/internals/entity"
+	"BACKEND/internals/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
