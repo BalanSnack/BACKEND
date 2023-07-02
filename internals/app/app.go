@@ -65,5 +65,5 @@ func Run() {
 	r.DELETE("/vote/:id", mw, voteController.Delete) // 사용 X 예정
 
 	//r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	r.Run("localhost:3000")
+	r.Run("localhost:8080")
 }
