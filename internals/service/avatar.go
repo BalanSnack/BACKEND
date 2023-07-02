@@ -1,7 +1,8 @@
 package service
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
+	"BACKEND/internals/pkg"
+	"BACKEND/internals/pkg/mysql"
 	"log"
 )
 

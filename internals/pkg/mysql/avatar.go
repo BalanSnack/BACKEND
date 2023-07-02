@@ -1,9 +1,9 @@
 package mysql
 
 import (
+	"BACKEND/internals/pkg"
 	"database/sql"
 	"fmt"
-	"github.com/BalanSnack/BACKEND/internals/pkg"
 	//_ "github.com/go-sql-driver/mysql"
 )
 

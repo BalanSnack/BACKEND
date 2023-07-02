@@ -1,7 +1,8 @@
 package controller
 
 import (
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
+	"BACKEND/internals/pkg"
+	"BACKEND/internals/pkg/mysql"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"

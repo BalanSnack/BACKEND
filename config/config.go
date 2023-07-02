@@ -1,8 +1,8 @@
 package config
 
 import (
-	docs "github.com/BalanSnack/BACKEND/docs"
-	"github.com/BalanSnack/BACKEND/internals/util"
+	docs "BACKEND/docs"
+	"BACKEND/internals/util"
 	"github.com/spf13/viper"
 	"log"
 )

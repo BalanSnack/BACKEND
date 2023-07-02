@@ -2,10 +2,12 @@ package controller
 
 import (
 	"errors"
-	"github.com/BalanSnack/BACKEND/internals/util"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"BACKEND/internals/util"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CheckAccessToken() gin.HandlerFunc {

@@ -1,11 +1,11 @@
 package app
 
 import (
+	_ "BACKEND/docs"
+	"BACKEND/internals/controller"
+	"BACKEND/internals/pkg/mysql"
+	"BACKEND/internals/service"
 	"database/sql"
-	_ "github.com/BalanSnack/BACKEND/docs"
-	"github.com/BalanSnack/BACKEND/internals/controller"
-	"github.com/BalanSnack/BACKEND/internals/repository/mysql"
-	"github.com/BalanSnack/BACKEND/internals/service"
 	"github.com/gin-gonic/gin"
 	//swaggerFiles "github.com/swaggo/files"
 	//ginSwagger "github.com/swaggo/gin-swagger"

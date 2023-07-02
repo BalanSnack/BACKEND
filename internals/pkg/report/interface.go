@@ -3,7 +3,7 @@ package report
 import (
 	"context"
 
-	"github.com/BalanSnack/BACKEND/internals/pkg/agg"
+	"BACKEND/internals/pkg/agg"
 )
 
 type GameRepository interface {
