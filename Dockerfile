@@ -6,6 +6,8 @@ COPY cmd/server ./cmd/server
 COPY config ./config
 COPY internals ./internals
 COPY docs ./docs
+ARG _ENV
+ENV ENV=${_ENV}
 RUN CGO_ENABLED=0 GOOS=linux go build -a -v BACKEND/cmd/server
 
 FROM gcr.io/distroless/static:latest

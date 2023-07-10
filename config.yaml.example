@@ -6,11 +6,15 @@ jwt: {
 }
 
 google: {
-  client_id: "your_client_id",
-  client_secret: "your_client_secret",
-  redirect_uri: "your_redirect_uri"
+  client_id: "your_client_id"",
+  client_secret: "your_client_secret
+  redirect_uri: "http://localhost:8080/callback/google",
+  my_info_uri: "https://www.googleapis.com/oauth2/v3/userinfo"
 }
 
 kakao: {
-
+  client_id: "your_client_id",
+  client_secret: "your_client_secret",
+  redirect_uri: "http://localhost:8080/callback/kakao",
+  my_info_uri: "https://kapi.kakao.com/v2/user/me"
 }
