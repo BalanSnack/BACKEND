@@ -14,7 +14,6 @@ func CheckAccessToken() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := ctx.Request.Header.Get("Authorization")
 		if auth == "" {
-			ctx.AbortWithError(http.StatusUnauthorized, errors.New("information required for authentication is missing; Authorization header"))
 			return
 		}
 

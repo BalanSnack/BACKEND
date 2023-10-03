@@ -56,7 +56,7 @@ func (r *CommentRepository) Delete(id int) error {
 func (r *CommentRepository) Update(id int, content string) error {
 	stmt, err := r.db.Prepare("UPDATE comments SET content = ? WHERE id = ?")
 	if err != nil {
-		fmt.Errorf("failed to prepare get statement: %v", err)
+		return fmt.Errorf("failed to prepare get statement: %v", err)
 	}
 	defer stmt.Close()
 

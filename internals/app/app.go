@@ -1,20 +1,17 @@
 package app
 
 import (
-	_ "BACKEND/docs"
+	"database/sql"
+
 	"BACKEND/internals/controller"
 	"BACKEND/internals/pkg/mysql"
 	"BACKEND/internals/service"
-	"database/sql"
-	"github.com/gin-gonic/gin"
-	//swaggerFiles "github.com/swaggo/files"
-	//ginSwagger "github.com/swaggo/gin-swagger"
 
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/gin-gonic/gin"
 )
 
 func Run() {
-	db, err := sql.Open("mysql", "root:yksyjs@tcp(localhost:3306)/test?parseTime=true")
+	db, err := sql.Open("mysql", "balansnack:balansnack@tcp(localhost:3306)/balansnack?parseTime=true")
 	if err != nil {
 		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
 	}
