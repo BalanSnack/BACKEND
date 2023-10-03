@@ -1,0 +1,35 @@
+services:
+  db:
+    restart: always
+    platform: linux/x86_64
+    image: mysql:8.0.27
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=balansnack
+      - MYSQL_USER=balansnack
+      - MYSQL_PASSWORD=balansnack
+      - MYSQL_ROOT_PASSWORD=balansnack
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 5s
+      retries: 20
+
+  api:
+    image: balansnack/balansnack-local-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ENV=docker
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcp_credentials.json
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - $HOME/.config/gcloud/application_default_credentials.json:/gcp_credentials.json:ro
+
+volumes:
+  db_data:

@@ -48,7 +48,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 
 func (c *AuthController) Callback(ctx *gin.Context) {
 	var (
-		response entity.TokenResponse
+		response *entity.TokenResponse
 		err      error
 	)
 
